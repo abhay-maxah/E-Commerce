@@ -2,7 +2,7 @@ import { ShoppingCart, UserPlus, LogIn, LogOut, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useUserStore } from "../stores/useUserStore.js";
 import { useCartStore } from "../stores/useCartStore.js";
-
+import { Cookie, CookieIcon } from "lucide-react";
 const NavBar = () => {
   const { user, logout } = useUserStore();
   const isAdmin = user?.role === "admin";
@@ -15,7 +15,8 @@ const NavBar = () => {
             to="/"
             className="text-2xl font-bold text-emerald-400 items-center space-x-2 flex"
           >
-            E-Commerce
+            <CookieIcon className="inline-block mr-1" size={24} />
+            COOKIES MAN
           </Link>
 
           <nav className="flex flex-wrap items-center gap-4">
@@ -25,6 +26,20 @@ const NavBar = () => {
          ease-in-out"
             >
               Home
+            </Link>
+            <Link
+              to={"/"}
+              className="text-gray-300 hover:text-emerald-400 transition duration-300
+         ease-in-out"
+            >
+              Cookies
+            </Link>
+            <Link
+              to={"/"}
+              className="text-gray-300 hover:text-emerald-400 transition duration-300
+         ease-in-out"
+            >
+              Chocolates
             </Link>
             {user && (
               <Link
