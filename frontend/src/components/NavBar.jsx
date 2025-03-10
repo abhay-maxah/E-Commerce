@@ -5,26 +5,29 @@ import {
   LogOut,
   Lock,
   Menu,
+  UserIcon,
   X,
+  CookieIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useUserStore } from "../stores/useUserStore.js";
 import { useCartStore } from "../stores/useCartStore.js";
-import { CookieIcon } from "lucide-react";
 
 const NavBar = () => {
   const { user, logout } = useUserStore();
   const isAdmin = user?.role === "admin";
   const { cart } = useCartStore();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
-
   const closeMenu = () => setMenuOpen(false);
+  const toggleProfile = () => setShowProfile(!showProfile);
+  const closeProfile = () => setShowProfile(false);
 
   return (
-    <header className="fixed top-0 left-0 w-full bg-[#fcf7f8] text-[#A31621] bg-opacity-90 backdrop-blur-md shadow-lg z-40 ">
+    <header className="fixed top-0 left-0 w-full bg-[#fcf7f8] text-[#A31621] bg-opacity-90 backdrop-blur-md shadow-lg z-40">
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           {/* Logo */}
@@ -57,49 +60,92 @@ const NavBar = () => {
           <nav
             className={`lg:flex items-center gap-4 ${
               menuOpen
-                ? "flex flex-col justify-center items-center w-4/5 max-w-sm bg-gray-900 rounded-lg shadow-lg p-6 absolute top-16 right-0"
+                ? "flex flex-col justify-center items-center w-4/5 max-w-sm bg-[#fcf7f8] rounded-lg shadow-lg p-6 absolute top-16 right-0"
                 : "hidden"
             } lg:block lg:static lg:w-auto lg:bg-transparent transition-all duration-300`}
           >
             <Link
               to="/"
-              className="block lg:inline-block text-[#A31621]  py-2 lg:py-0"
+              className="block lg:inline-block text-[#A31621] py-2 lg:py-0"
               onClick={closeMenu}
             >
               Home
             </Link>
             <Link
               to="/category/Cookies"
-              className="block lg:inline-block text-[#A31621]  py-2 lg:py-0"
+              className="block lg:inline-block text-[#A31621] py-2 lg:py-0"
               onClick={closeMenu}
             >
               Cookies
             </Link>
             <Link
               to="/category/Chocolates"
-              className="block lg:inline-block   text-[#A31621]  py-2 lg:py-0"
+              className="block lg:inline-block text-[#A31621] py-2 lg:py-0"
               onClick={closeMenu}
             >
               Chocolates
             </Link>
 
             {user && (
-              <Link
-                to="/cart"
-                className="relative group text-[#A31621] py-2 lg:py-0"
-                onClick={closeMenu}
-              >
-                <ShoppingCart
-                  className="inline-block mr-1 group-hover:text-[#421015] "
-                  size={20}
-                />
-                <span className="hidden sm:inline">Cart</span>
-                {cart.length > 0 && (
-                  <span className="absolute -top-2 -left-2 bg-[#dd6975] text-white rounded-full px-2 py-0.5 text-xs">
-                    {cart.length}
-                  </span>
-                )}
-              </Link>
+              <>
+                <Link
+                  to="/cart"
+                  className="relative group text-[#A31621] py-2 lg:py-0"
+                  onClick={closeMenu}
+                >
+                  <ShoppingCart
+                    className="inline-block mr-1 group-hover:text-[#421015]"
+                    size={20}
+                  />
+                  <span className="hidden sm:inline">Cart</span>
+                  {cart.length > 0 && (
+                    <span className="absolute -top-2 -left-2 bg-[#dd6975] text-white rounded-full px-2 py-0.5 text-xs">
+                      {cart.length}
+                    </span>
+                  )}
+                </Link>
+
+                {/* Profile Button */}
+                <div className="relative">
+                  <button
+                    className="flex items-center text-[#A31621] py-2 lg:py-0 focus:outline-none"
+                    onClick={toggleProfile}
+                  >
+                    <UserIcon className="inline-block mr-1" size={20} />
+                    <span>Profile</span>
+                  </button>
+
+                  {/* Profile Card */}
+                  {showProfile && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white shadow-xl rounded-lg p-4 text-black border border-gray-300">
+                      {/* Close Button */}
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold">Profile</h3>
+                        <button onClick={closeProfile}>
+                          <X
+                            size={20}
+                            className="text-gray-500 hover:text-black"
+                          />
+                        </button>
+                      </div>
+                      <div className="mt-3 text-sm">
+                        <p>
+                          <span className="font-semibold">Name:</span>{" "}
+                          {user.name}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Email:</span>{" "}
+                          {user.email}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Role:</span>{" "}
+                          {user.role}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {isAdmin && (

@@ -113,7 +113,7 @@ const AnalyticsTab = () => {
 };
 export default AnalyticsTab;
 
-const AnalyticsCard = ({ title, value, color }) => (
+const AnalyticsCard = ({ title, value, icon: Icon, color }) => (
   <motion.div
     className={`bg-transparent rounded-lg p-6 shadow-lg overflow-hidden  relative ${color}`}
     initial={{ opacity: 0, y: 20 }}
