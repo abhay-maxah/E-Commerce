@@ -13,7 +13,7 @@ import CategoryPage from "./pages/CategoryPage";
 import CartPage from "./pages/CartPage";
 import PurchaseSuccessPage from "./pages/PurchaseSuccessPage";
 import PurchaseCancelPage from "./pages/PurchaseCancelPage";
-
+import ErrorPage from "./pages/ErrorPage";
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
   const { getCartItems } = useCartStore();
@@ -73,6 +73,16 @@ function App() {
             <Route
               path="/purchase-cancel"
               element={user ? <PurchaseCancelPage /> : <Navigate to="/login" />}
+            />
+            <Route path="/error" element={<ErrorPage />} />
+            <Route
+              path="*"
+              element={
+                <Navigate
+                  to="/error"
+                  state={{ error: "404 - Page Not Found" }}
+                />
+              }
             />
           </Routes>
         </div>
