@@ -8,7 +8,7 @@ import HeroCard from "../components/HeroCard";
 import Subscribe from "../components/Subscribe";
 import Footer from "../components/Footer";
 const categories = [
-  { href: "/Cookies", name: "Cookies", imageUrl: "/base.jpg" },
+  { href: "/Cookies", name: "Cookies", imageUrl: "/baseCookies.jpg" },
   { href: "/Chocolates", name: "Chocolates", imageUrl: "/baseChocolates.jpg" },
 ];
 
