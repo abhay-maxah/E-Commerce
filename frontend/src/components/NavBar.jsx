@@ -66,21 +66,21 @@ const NavBar = () => {
           >
             <Link
               to="/"
-              className="block lg:inline-block text-[#A31621] py-2 lg:py-0"
+              className="block lg:inline-block  hover:bg-[#A31621]  rounded-md hover:text-white text-[#A31621] py-2 px-4  lg:py-0"
               onClick={closeMenu}
             >
               Home
             </Link>
             <Link
               to="/category/Cookies"
-              className="block lg:inline-block text-[#A31621] py-2 lg:py-0"
+              className="block lg:inline-block  hover:bg-[#A31621]  rounded-md hover:text-white text-[#A31621] py-2 px-4 lg:py-0"
               onClick={closeMenu}
             >
               Cookies
             </Link>
             <Link
               to="/category/Chocolates"
-              className="block lg:inline-block text-[#A31621] py-2 lg:py-0"
+              className="block lg:inline-block  hover:bg-[#A31621]  rounded-md hover:text-white text-[#A31621] py-2 px-4 lg:py-0"
               onClick={closeMenu}
             >
               Chocolates
@@ -90,24 +90,21 @@ const NavBar = () => {
               <>
                 <Link
                   to="/cart"
-                  className="relative group text-[#A31621] py-2 lg:py-0"
+                  className="relative group  hover:bg-[#A31621]  rounded-md hover:text-white text-[#A31621] py-2 px-4 lg:py-0"
                   onClick={closeMenu}
                 >
-                  <ShoppingCart
-                    className="inline-block mr-1 group-hover:text-[#421015]"
-                    size={20}
-                  />
+                  <ShoppingCart className="inline-block mr-1 " size={20} />
                   <span className="">Cart</span>
                   {cart.length > 0 && (
-                    <span className="absolute -top-2 -left-2 bg-[#dd6975] text-white rounded-full px-2 py-0.5 text-xs">
+                    <span className="absolute -top-2 -left-2 hover:bg-[#A31621]  hover:text-white text-[#A31621] rounded-full py-2 text-xs">
                       {cart.length}
                     </span>
                   )}
                 </Link>
                 {/* Profile Button */}
-                <div className="relative">
+                <div className="relative hover:bg-[#A31621] rounded-md  hover:text-white text-[#A31621]">
                   <button
-                    className="flex items-center text-[#A31621] py-2 lg:py-0 focus:outline-none"
+                    className="flex items-center py-2 lg:py-0 focus:outline-none"
                     onClick={toggleProfile}
                   >
                     <UserIcon className="inline-block mr-1" size={20} />
@@ -154,7 +151,7 @@ const NavBar = () => {
             {isAdmin && (
               <Link
                 to="/secret-dashboard"
-                className="hover:bg-[#dd6975] hover:text-white text-[#A31621] px-3 py-1 rounded-md"
+                className="hover:bg-[#A31621]  hover:text-white text-[#A31621] px-3 py-1 rounded-md"
                 onClick={closeMenu}
               >
                 <Lock size={18} className="inline-block mr-1" />
@@ -164,7 +161,7 @@ const NavBar = () => {
 
             {user ? (
               <button
-                className="bg-transparent hover:bg-[#dd6975] hover:text-white text-[#A31621] py-2 px-4 rounded-md"
+                className="bg-transparent hover:bg-[#A31621]  hover:text-white text-[#A31621] py-2 px-4 rounded-md"
                 onClick={() => {
                   logout();
                   closeMenu();
@@ -177,14 +174,14 @@ const NavBar = () => {
               <>
                 <Link
                   to="/signup"
-                  className="bg-transparent hover:bg-[#dd6975] hover:text-white text-[#A31621] py-2 px-4 rounded-md"
+                  className="bg-transparent hover:bg-[#A31621]  hover:text-white text-[#A31621] py-2 px-4 rounded-md"
                   onClick={closeMenu}
                 >
                   <UserPlus size={18} className="inline-block mr-1" /> Sign Up
                 </Link>
                 <Link
                   to="/login"
-                  className="bg-transparent hover:bg-[#dd6975] hover:text-white text-[#A31621] py-2 px-4 rounded-md"
+                  className="bg-transparent hover:bg-[#A31621]  hover:text-white text-[#A31621] py-2 px-4 rounded-md"
                   onClick={closeMenu}
                 >
                   <LogIn size={18} className="inline-block mr-1" /> Login
