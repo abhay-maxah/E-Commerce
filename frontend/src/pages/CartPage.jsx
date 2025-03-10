@@ -63,7 +63,7 @@ const EmptyCartUI = () => (
       Looks like you {"haven't"} added anything to your cart yet.
     </p>
     <Link
-      className="mt-4 rounded-md bg-emerald-500 px-6 py-2 text-white transition-colors hover:bg-emerald-600"
+      className="mt-4 rounded-md bg-transparent border border-[#A31621] hover:bg-[#A31621] hover:text-white px-6 py-2 "
       to="/"
     >
       Start Shopping

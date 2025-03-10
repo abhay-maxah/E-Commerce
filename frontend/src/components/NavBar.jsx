@@ -24,13 +24,13 @@ const NavBar = () => {
   const closeMenu = () => setMenuOpen(false);
 
   return (
-    <header className="fixed top-0 left-0 w-full bg-gray-900 bg-opacity-90 backdrop-blur-md shadow-lg z-40 border-b border-emerald-800">
+    <header className="fixed top-0 left-0 w-full bg-[#fcf7f8] text-[#A31621] bg-opacity-90 backdrop-blur-md shadow-lg z-40 ">
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link
             to="/"
-            className="text-2xl font-bold text-emerald-400 flex items-center space-x-2"
+            className="text-2xl font-bold text-[#A31621] flex items-center space-x-2"
           >
             <CookieIcon className="mr-2" size={24} />
             COOKIES MAN
@@ -40,13 +40,13 @@ const NavBar = () => {
           <div className="lg:hidden">
             {menuOpen ? (
               <X
-                className="text-white cursor-pointer"
+                className="text-[#A31621] cursor-pointer"
                 size={28}
                 onClick={toggleMenu}
               />
             ) : (
               <Menu
-                className="text-white cursor-pointer"
+                className="text-[#A31621] cursor-pointer"
                 size={28}
                 onClick={toggleMenu}
               />
@@ -63,21 +63,21 @@ const NavBar = () => {
           >
             <Link
               to="/"
-              className="block lg:inline-block text-gray-300 hover:text-emerald-400 py-2 lg:py-0"
+              className="block lg:inline-block text-[#A31621]  py-2 lg:py-0"
               onClick={closeMenu}
             >
               Home
             </Link>
             <Link
               to="/category/Cookies"
-              className="block lg:inline-block text-gray-300 hover:text-emerald-400 py-2 lg:py-0"
+              className="block lg:inline-block text-[#A31621]  py-2 lg:py-0"
               onClick={closeMenu}
             >
               Cookies
             </Link>
             <Link
               to="/category/Chocolates"
-              className="block lg:inline-block text-gray-300 hover:text-emerald-400 py-2 lg:py-0"
+              className="block lg:inline-block   text-[#A31621]  py-2 lg:py-0"
               onClick={closeMenu}
             >
               Chocolates
@@ -86,16 +86,16 @@ const NavBar = () => {
             {user && (
               <Link
                 to="/cart"
-                className="relative group text-gray-300 hover:text-emerald-400 py-2 lg:py-0"
+                className="relative group text-[#A31621] py-2 lg:py-0"
                 onClick={closeMenu}
               >
                 <ShoppingCart
-                  className="inline-block mr-1 group-hover:text-emerald-400"
+                  className="inline-block mr-1 group-hover:text-[#421015] "
                   size={20}
                 />
                 <span className="hidden sm:inline">Cart</span>
                 {cart.length > 0 && (
-                  <span className="absolute -top-2 -left-2 bg-emerald-500 text-white rounded-full px-2 py-0.5 text-xs">
+                  <span className="absolute -top-2 -left-2 bg-[#dd6975] text-white rounded-full px-2 py-0.5 text-xs">
                     {cart.length}
                   </span>
                 )}
@@ -105,7 +105,7 @@ const NavBar = () => {
             {isAdmin && (
               <Link
                 to="/secret-dashboard"
-                className="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1 rounded-md"
+                className="hover:bg-[#dd6975] hover:text-white text-[#A31621] px-3 py-1 rounded-md"
                 onClick={closeMenu}
               >
                 <Lock size={18} className="inline-block mr-1" />
@@ -115,7 +115,7 @@ const NavBar = () => {
 
             {user ? (
               <button
-                className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
+                className="bg-transparent hover:bg-[#dd6975] hover:text-white text-[#A31621] py-2 px-4 rounded-md"
                 onClick={() => {
                   logout();
                   closeMenu();
@@ -128,17 +128,17 @@ const NavBar = () => {
               <>
                 <Link
                   to="/signup"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-md"
+                  className="bg-transparent hover:bg-[#dd6975] hover:text-white text-[#A31621] py-2 px-4 rounded-md"
                   onClick={closeMenu}
                 >
-                  <UserPlus size={18} className="mr-2" /> Sign Up
+                  <UserPlus size={18} className="inline-block mr-1" /> Sign Up
                 </Link>
                 <Link
                   to="/login"
-                  className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-md"
+                  className="bg-transparent hover:bg-[#dd6975] hover:text-white text-[#A31621] py-2 px-4 rounded-md"
                   onClick={closeMenu}
                 >
-                  <LogIn size={18} className="mr-2" /> Login
+                  <LogIn size={18} className="inline-block mr-1" /> Login
                 </Link>
               </>
             )}

@@ -72,33 +72,37 @@ const AnalyticsTab = () => {
         />
       </div>
       <motion.div
-        className="bg-gray-800/60 rounded-lg p-6 shadow-lg"
+        className="bg-gradient-to-br from-red-200 to-red-100 opacity-90 rounded-lg p-6 shadow-xl"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.25 }}
       >
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={dailySalesData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" stroke="#D1D5DB" />
-            <YAxis yAxisId="left" stroke="#D1D5DB" />
-            <YAxis yAxisId="right" orientation="right" stroke="#D1D5DB" />
-            <Tooltip />
+            <CartesianGrid strokeDasharray="3 3" stroke="#92969c" />
+            <XAxis dataKey="name" stroke="#92969c" />
+            <YAxis yAxisId="left" stroke="#92969c" />
+            <YAxis yAxisId="right" orientation="right" stroke="#92969c" />
+            <Tooltip
+              contentStyle={{ backgroundColor: "#FFEBEE", color: "#A31621" }}
+            />
             <Legend />
             <Line
               yAxisId="left"
               type="monotone"
               dataKey="sales"
-              stroke="#10B981"
-              activeDot={{ r: 8 }}
+              stroke="#FF1744"
+              strokeWidth={3}
+              activeDot={{ r: 10, stroke: "#FFF", strokeWidth: 2 }}
               name="Sales"
             />
             <Line
               yAxisId="right"
               type="monotone"
               dataKey="revenue"
-              stroke="#3B82F6"
-              activeDot={{ r: 8 }}
+              stroke="#255ab0"
+              strokeWidth={3}
+              activeDot={{ r: 10, stroke: "#FFF", strokeWidth: 2 }}
               name="Revenue"
             />
           </LineChart>
@@ -109,21 +113,21 @@ const AnalyticsTab = () => {
 };
 export default AnalyticsTab;
 
-const AnalyticsCard = ({ title, value, icon: Icon, color }) => (
+const AnalyticsCard = ({ title, value, color }) => (
   <motion.div
-    className={`bg-gray-800 rounded-lg p-6 shadow-lg overflow-hidden relative ${color}`}
+    className={`bg-transparent rounded-lg p-6 shadow-lg overflow-hidden  relative ${color}`}
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
   >
     <div className="flex justify-between items-center">
       <div className="z-10">
-        <p className="text-emerald-300 text-sm mb-1 font-semibold">{title}</p>
-        <h3 className="text-white text-3xl font-bold">{value}</h3>
+        <p className=" text-sm mb-1 font-semibold">{title}</p>
+        <h3 className=" text-3xl font-bold">{value}</h3>
       </div>
     </div>
-    <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-emerald-900 opacity-30" />
-    <div className="absolute -bottom-4 -right-4 text-emerald-800 opacity-50">
+    <div className="absolute inset-0 bg-gradient-to-br from-red-700 to-red-400 opacity-30" />
+    <div className="absolute -bottom-4 -right-4 text-red-800 opacity-50">
       <Icon className="h-32 w-32" />
     </div>
   </motion.div>
