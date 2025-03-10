@@ -28,7 +28,7 @@ const HomePage = () => {
           Explore Our Categories
         </h1>
         <p className="text-center text-xl  mb-12">
-          Discover the Delicious Cookies
+          Discover the Delicious Variety
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

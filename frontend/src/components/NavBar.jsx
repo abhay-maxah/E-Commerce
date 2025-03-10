@@ -66,7 +66,7 @@ const NavBar = () => {
           >
             <Link
               to="/"
-              className="block lg:inline-block  hover:bg-[#A31621]  rounded-md hover:text-white text-[#A31621] py-2 px-4  lg:py-0"
+              className="block lg:inline-block  bg-transparent hover:bg-[#A31621]  hover:text-white text-[#A31621] py-2 px-4 rounded-md  lg:py-0"
               onClick={closeMenu}
             >
               Home
@@ -90,19 +90,20 @@ const NavBar = () => {
               <>
                 <Link
                   to="/cart"
-                  className="relative group  hover:bg-[#A31621]  rounded-md hover:text-white text-[#A31621] py-2 px-4 lg:py-0"
+                  className="relative bg-transparent hover:bg-[#A31621] hover:text-white text-[#A31621] py-2 px-4 rounded-md lg:py-0 transition-colors duration-300"
                   onClick={closeMenu}
                 >
-                  <ShoppingCart className="inline-block mr-1 " size={20} />
-                  <span className="">Cart</span>
+                  <ShoppingCart className="inline-block mr-1" size={20} />
+                  <span>Cart</span>
                   {cart.length > 0 && (
-                    <span className="absolute -top-2 -left-2 hover:bg-[#A31621]  hover:text-white text-[#A31621] rounded-full py-2 text-xs">
+                    <span className="absolute -top-2 -left-2 bg-[#A31621] text-white rounded-full px-2 py-0.5 text-xs font-bold">
                       {cart.length}
                     </span>
                   )}
                 </Link>
+
                 {/* Profile Button */}
-                <div className="relative hover:bg-[#A31621] rounded-md  hover:text-white text-[#A31621]">
+                <div className="relative bg-transparent hover:bg-[#A31621]  hover:text-white text-[#A31621] py-2 px-4 rounded-md">
                   <button
                     className="flex items-center py-2 lg:py-0 focus:outline-none"
                     onClick={toggleProfile}
@@ -151,7 +152,7 @@ const NavBar = () => {
             {isAdmin && (
               <Link
                 to="/secret-dashboard"
-                className="hover:bg-[#A31621]  hover:text-white text-[#A31621] px-3 py-1 rounded-md"
+                className="bg-transparent hover:bg-[#A31621]  hover:text-white text-[#A31621] py-2 px-4 rounded-md"
                 onClick={closeMenu}
               >
                 <Lock size={18} className="inline-block mr-1" />
