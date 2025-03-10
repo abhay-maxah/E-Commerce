@@ -97,14 +97,13 @@ const NavBar = () => {
                     className="inline-block mr-1 group-hover:text-[#421015]"
                     size={20}
                   />
-                  <span className="hidden sm:inline">Cart</span>
+                  <span className="">Cart</span>
                   {cart.length > 0 && (
                     <span className="absolute -top-2 -left-2 bg-[#dd6975] text-white rounded-full px-2 py-0.5 text-xs">
                       {cart.length}
                     </span>
                   )}
                 </Link>
-
                 {/* Profile Button */}
                 <div className="relative">
                   <button
@@ -117,7 +116,11 @@ const NavBar = () => {
 
                   {/* Profile Card */}
                   {showProfile && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white shadow-xl rounded-lg p-4 text-black border border-gray-300">
+                    <div
+                      className="absolute left-1/2 translate-x-[-50%] mt-2 w-64 bg-white shadow-xl rounded-lg p-4 text-black border border-gray-300 z-50
+    sm:left-auto sm:right-0 sm:translate-x-0"
+                    >
+                      {" "}
                       {/* Close Button */}
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-semibold">Profile</h3>

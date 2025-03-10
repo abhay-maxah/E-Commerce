@@ -4,7 +4,6 @@ import { useProductStore } from "../stores/useProductStore";
 
 const ProductsList = () => {
   const { deleteProduct, toggleFeaturedProduct, products } = useProductStore();
-  console.log(products);
   return (
     <motion.div
       className="bg-transparent border border-[#A31621] text-[#A31621] shadow-lg rounded-lg overflow-hidden max-w-4xl mx-auto"
