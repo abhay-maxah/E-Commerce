@@ -1,6 +1,6 @@
 const HowToSection = () => {
   return (
-    <div className="w-auto mx-auto flex flex-col items-center justify-center min-h-screen p-8 bg-cream text-[#A31621] border border-red-300">
+    <div className="w-auto mx-auto flex flex-col items-center justify-center min-h-screen p-8  text-[#A31621]">
       <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-8 w-full">
         <div className="text-center ml-[150px] md:text-left">
           <h3 className="uppercase font-bold text-sm tracking-wider mb-4">
@@ -31,9 +31,9 @@ const HowToSection = () => {
           Build your box
         </h2>
         <p className="text-lg text-[#A31621] leading-relaxed">
-          Munchies is a premium chocolate company specializing in crafting
-          high-quality chocolate chips for baking enthusiasts and professionals
-          alike.
+          CookiesMan is a premium chocolate & Cookies company specializing in
+          crafting high-quality chocolate chips And Cookies for baking
+          enthusiasts and professionals a like.
         </p>
       </div>
     </div>

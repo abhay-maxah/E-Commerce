@@ -43,7 +43,7 @@ export default function WhyChooseUs() {
         Why Choose Us?
       </h2>
       <p className=" text-[#A31621] mb-10">
-        Crafting moments of perfection in every cup
+        Crafting moments of perfection in every Cookies
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-8">
         {features.map((feature, index) => (
@@ -56,7 +56,6 @@ export default function WhyChooseUs() {
               <p className={`italic mt-2 ${feature.text}`}>
                 {feature.description}
               </p>
-              <div className={`border-t mt-4 w-full ${feature.text}`}></div>
             </div>
           </div>
         ))}
