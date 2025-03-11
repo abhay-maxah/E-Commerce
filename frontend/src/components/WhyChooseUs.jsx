@@ -1,37 +1,35 @@
 import {
-  LucideCoffee,
+  LucideCookie,
   LucideDollarSign,
   LucideAward,
   LucideCupSoda,
 } from "lucide-react";
-
 const features = [
   {
-    title: "Premium Quality",
-    description: "Ethically sourced Arabica beans, roasted to perfection",
-    icon: <LucideCoffee size={40} className="text-[#A31621]" />,
-
+    title: "Premium Ingredients",
+    description:
+      "Made with high-quality cocoa and the finest ingredients for a rich taste",
+    icon: <LucideCookie size={40} className="text-[#A31621]" />,
     text: "text-[#A31621]",
   },
   {
     title: "Fair Pricing",
-    description: "Premium quality at honest price",
+    description: "Luxury chocolates and gourmet cookies at an honest price",
     icon: <LucideDollarSign size={40} className="text-[#A31621]" />,
-
     text: "text-[#A31621]",
   },
   {
-    title: "Unique Teast",
-    description: "Artisan blends crafted by master roasters",
+    title: "Unique Flavors",
+    description:
+      "Handcrafted recipes with a perfect balance of sweetness and texture",
     icon: <LucideCupSoda size={40} className="text-[#A31621]" />,
-
     text: "text-[#A31621]",
   },
   {
     title: "Award Winning",
-    description: "Recognized for excellence in Cookies craftsmanship",
+    description:
+      "Recognized for excellence in chocolate and cookie craftsmanship",
     icon: <LucideAward size={40} className="text-[#A31621]" />,
-
     text: "text-[#A31621]",
   },
 ];
