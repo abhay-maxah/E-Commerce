@@ -114,11 +114,7 @@ const NavBar = () => {
 
                   {/* Profile Card */}
                   {showProfile && (
-                    <div
-                      className="absolute left-1/2 translate-x-[-50%] mt-2 w-64 bg-white shadow-xl rounded-lg p-4 text-black border border-gray-300 z-50
-    sm:left-auto sm:right-0 sm:translate-x-0"
-                    >
-                      {" "}
+                    <div className="absolute left-1/2 translate-x-[-50%] mt-2 w-64 bg-white shadow-xl rounded-lg p-4 text-black border border-gray-300 z-50 sm:left-auto sm:right-0 sm:translate-x-0">
                       {/* Close Button */}
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-semibold">Profile</h3>
@@ -129,19 +125,27 @@ const NavBar = () => {
                           />
                         </button>
                       </div>
-                      <div className="mt-3 text-sm">
-                        <p>
-                          <span className="font-semibold">Name:</span>{" "}
-                          {user.name}
-                        </p>
-                        <p>
-                          <span className="font-semibold">Email:</span>{" "}
-                          {user.email}
-                        </p>
-                        <p>
-                          <span className="font-semibold">Role:</span>{" "}
-                          {user.role}
-                        </p>
+
+                      {/* Avatar with First Letter */}
+                      <div className="mt-3 flex items-center space-x-3">
+                        <div className="w-12 h-12 flex items-center justify-center bg-red-800 text-white text-xl font-bold rounded-full">
+                          {user.name?.charAt(0).toUpperCase()}
+                          {user.name?.charAt(5).toUpperCase()}
+                        </div>
+                        <div className="text-sm">
+                          <p>
+                            <span className="font-semibold">Name:</span>{" "}
+                            {user.name}
+                          </p>
+                          <p>
+                            <span className="font-semibold">Email:</span>{" "}
+                            {user.email}
+                          </p>
+                          <p>
+                            <span className="font-semibold">Role:</span>{" "}
+                            {user.role}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
