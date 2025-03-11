@@ -1,6 +1,11 @@
 import cloudinary from "../lib/cloudinary.js";
 import { redis } from "../lib/redis.js";
 import Product from "../models/product.model.js";
+import sharp from "sharp";
+import { v4 as uuidv4 } from "uuid";
+import fs from "fs";
+import path from "path";
+
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find({});
@@ -26,6 +31,35 @@ export const getFeaturedProducts = async (req, res) => {
     res.status(500).json(error);
   }
 };
+// export const createProduct = async (req, res) => {
+//   try {
+//     const { name, description, price, image, category } = req.body;
+
+//     let cloudinaryResponse = null;
+
+//     if (image) {
+//       cloudinaryResponse = await cloudinary.uploader.upload(image, {
+//         folder: "products",
+//       });
+//     }
+
+//     const product = await Product.create({
+//       name,
+//       description,
+//       price,
+//       image: cloudinaryResponse?.secure_url
+//         ? cloudinaryResponse.secure_url
+//         : "",
+//       category,
+//     });
+
+//     res.status(201).json(product);
+//   } catch (error) {
+//     console.log("Error in createProduct controller", error.message);
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// };
+
 export const createProduct = async (req, res) => {
   try {
     const { name, description, price, image, category } = req.body;
@@ -33,7 +67,28 @@ export const createProduct = async (req, res) => {
     let cloudinaryResponse = null;
 
     if (image) {
-      cloudinaryResponse = await cloudinary.uploader.upload(image, {
+      const imageBuffer = Buffer.from(image.split(",")[1], "base64");
+      console.log("Original Image Size:", imageBuffer.length / 1024, "KB");
+
+      // Compress the image in memory
+      const compressedBuffer = await sharp(imageBuffer)
+        .resize({ width: 800 }) // Resize to a max width of 800px
+        .jpeg({ quality: 80 }) // Compress with 80% quality
+        .toBuffer();
+
+      console.log(
+        "Compressed Image Size:",
+        compressedBuffer.length / 1024,
+        "KB"
+      );
+
+      // Convert the compressed buffer to base64
+      const compressedBase64 = `data:image/jpeg;base64,${compressedBuffer.toString(
+        "base64"
+      )}`;
+
+      // Upload to Cloudinary directly from buffer
+      cloudinaryResponse = await cloudinary.uploader.upload(compressedBase64, {
         folder: "products",
       });
     }
@@ -42,9 +97,7 @@ export const createProduct = async (req, res) => {
       name,
       description,
       price,
-      image: cloudinaryResponse?.secure_url
-        ? cloudinaryResponse.secure_url
-        : "",
+      image: cloudinaryResponse?.secure_url || "",
       category,
     });
 
@@ -84,7 +137,7 @@ export const getRecommendeProducts = async (req, res) => {
   try {
     const product = await Product.aggregate([
       {
-        $sample: { size: 3 },
+        $sample: { size: 4 },
       },
       {
         $project: {

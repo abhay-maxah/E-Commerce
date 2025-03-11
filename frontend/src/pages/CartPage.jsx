@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../stores/useCartStore";
 import { motion } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
@@ -50,23 +50,31 @@ const CartPage = () => {
 };
 export default CartPage;
 
-const EmptyCartUI = () => (
-  <motion.div
-    className="flex flex-col items-center justify-center space-y-4 py-16"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5 }}
-  >
-    <ShoppingCart className="h-24 w-24 text-gray-300" />
-    <h3 className="text-2xl font-semibold ">Your cart is empty</h3>
-    <p className="text-gray-400">
-      Looks like you {"haven't"} added anything to your cart yet.
-    </p>
-    <Link
-      className="mt-4 rounded-md bg-transparent border border-[#A31621] hover:bg-[#A31621] hover:text-white px-6 py-2 "
-      to="/"
+const EmptyCartUI = () => {
+  const navigate = useNavigate();
+
+  const handleStartShopping = () => {
+    navigate("/", { state: { scrollToCategories: true } });
+  };
+
+  return (
+    <motion.div
+      className="flex flex-col items-center justify-center space-y-4 py-16"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
     >
-      Start Shopping
-    </Link>
-  </motion.div>
-);
+      <ShoppingCart className="h-24 w-24 text-gray-300" />
+      <h3 className="text-2xl font-semibold ">Your cart is empty</h3>
+      <p className="text-gray-400">
+        Looks like you {"haven't"} added anything to your cart yet.
+      </p>
+      <button
+        className="mt-4 rounded-md bg-transparent border border-[#A31621] hover:bg-[#A31621] hover:text-white px-6 py-2 "
+        onClick={handleStartShopping}
+      >
+        Start Shopping
+      </button>
+    </motion.div>
+  );
+};

@@ -31,13 +31,7 @@ function App() {
   return (
     <>
       <div className="min-h-screen bg-[#fcf7f8] text-[#A31621] relative overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full " />
-          </div>
-        </div>
-        <div className="relative z-50 pt-20 ">
+        <div className="relative z-50 ">
           <NavBar />
           <Routes>
             <Route path="/" element={<HomePage />} />

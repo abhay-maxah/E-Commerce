@@ -1,11 +1,21 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { LogIn, Mail, Lock, ArrowRight, Loader } from "lucide-react";
+import {
+  LogIn,
+  Mail,
+  Lock,
+  ArrowRight,
+  Loader,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { useUserStore } from "../stores/useUserStore";
+
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login, loading } = useUserStore();
 
@@ -33,7 +43,7 @@ const LoginPage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
       >
-        <div className="bg-transparent  py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-transparent py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium">
@@ -49,17 +59,14 @@ const LoginPage = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className=" block w-full px-3 py-2 pl-10  
-									rounded-md shadow-sm
-									 placeholder-gray-400 focus:outline-none focus:ring-emerald-500 
-									 focus:border-emerald-500 sm:text-sm bg-transparent"
+                  className="block w-full px-3 py-2 pl-10 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm bg-transparent"
                   placeholder="you@example.com"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium ">
+              <label htmlFor="password" className="block text-sm font-medium">
                 Password
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
@@ -68,23 +75,30 @@ const LoginPage = () => {
                 </div>
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className=" block w-full px-3 py-2 pl-10 bg-transparent
-									rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                  className="block w-full px-3 py-2 pl-10 pr-10 bg-transparent rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                   placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4bg-transparent border border-[#A31621] hover:bg-[#A31621] hover:text-white 
-							rounded-md shadow-sm text-sm font-medium 
-							 focus:outline-none focus:ring-2 focus:ring-offset-2
-							  focus:ring-emerald-500 transition duration-150 ease-in-out disabled:opacity-50"
+              className="w-full flex justify-center py-2 px-4 bg-transparent border border-[#A31621] hover:bg-[#A31621] hover:text-white rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out disabled:opacity-50"
               disabled={loading}
             >
               {loading ? (
@@ -104,7 +118,7 @@ const LoginPage = () => {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm ">
+          <p className="mt-8 text-center text-sm">
             Not a member?{" "}
             <Link to="/signup" className="font-medium">
               Sign up now <ArrowRight className="inline h-4 w-4" />

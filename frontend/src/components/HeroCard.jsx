@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export default function HeroCard() {
   return (
-    <div className="relative w-full min-h-screen md:h-[500px] md:mt-2 lg:h-[600px] lg:mt-2 flex items-center justify-center text-center">
+    <div className="relative w-full min-h-screen md:h-[500px] md:mt-2 lg:h-[600px]  flex items-center justify-center text-center">
       {/* Background Video */}
       <video
         className="absolute inset-0 w-full h-full object-cover"

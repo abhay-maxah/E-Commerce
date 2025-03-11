@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import CategoryItem from "../components/CategoryItem";
 import { useProductStore } from "../stores/useProductStore";
 import FeaturedProducts from "../components/FeaturedProducts";
@@ -7,6 +8,7 @@ import HowToSection from "../components/HowToSection";
 import HeroCard from "../components/HeroCard";
 import Subscribe from "../components/Subscribe";
 import Footer from "../components/Footer";
+
 const categories = [
   { href: "/Cookies", name: "Cookies", imageUrl: "/baseCookies.jpg" },
   { href: "/Chocolates", name: "Chocolates", imageUrl: "/baseChocolates.jpg" },
@@ -14,20 +16,32 @@ const categories = [
 
 const HomePage = () => {
   const { fetchFeaturedProducts, products, isLoading } = useProductStore();
+  const location = useLocation();
+  const categorySectionRef = useRef(null);
 
   useEffect(() => {
     fetchFeaturedProducts();
   }, [fetchFeaturedProducts]);
 
+  // Move useEffect OUTSIDE JSX
+  useEffect(() => {
+    if (location.state?.scrollToCategories && categorySectionRef.current) {
+      categorySectionRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [location]);
+
   return (
-    <div className="relative min-h-screen  overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden">
       <HeroCard />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h1 className="text-center text-5xl sm:text-6xl font-bold  mb-4">
+      <div
+        ref={categorySectionRef} // Add the ref to the category section
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        <h1 className="text-center text-5xl sm:text-6xl font-bold mb-4">
           Explore Our Categories
         </h1>
-        <p className="text-center text-xl  mb-12">
+        <p className="text-center text-xl mb-12">
           Discover the Delicious Variety
         </p>
 
@@ -41,6 +55,7 @@ const HomePage = () => {
           <FeaturedProducts featuredProducts={products} />
         )}
       </div>
+
       <WhyChooseUs />
       <HowToSection />
       <Subscribe />
@@ -48,4 +63,5 @@ const HomePage = () => {
     </div>
   );
 };
+
 export default HomePage;
