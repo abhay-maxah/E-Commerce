@@ -20,7 +20,7 @@ export default function HeroCard() {
       {/* Content */}
       <div className="relative z-10 top-3 text-white flex flex-col items-center">
         <h1 className="text-3xl md:text-5xl font-bold mb-6">
-          Cozy up with our new cookie collection
+          Cozy up with our new cookies collection
         </h1>
         <Link
           to="/category/Cookies"

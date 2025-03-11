@@ -31,15 +31,19 @@ export const useProductStore = create((set) => ({
     }
   },
   fetchProductsByCategory: async (category) => {
-    set({ loading: true });
+    set({ isLoading: true, products: [] }); // Clear products before fetching
+
     try {
       const response = await axios.get(`/products/category/${category}`);
-      set({ products: response.data, loading: false });
+      set({ products: response.data, isLoading: false });
     } catch (error) {
-      set({ error: "Failed to fetch products", loading: false });
-      toast.error(error.response.data.error || "Failed to fetch products");
+      const errorMessage =
+        error.response?.data?.error || "Failed to fetch products";
+      set({ error: errorMessage, isLoading: false });
+      toast.error(errorMessage);
     }
   },
+
   deleteProduct: async (productId) => {
     set({ loading: true });
     try {

@@ -34,7 +34,14 @@ const NavBar = () => {
     setMenuOpen(false);
     setIsProfileOpen(false);
   };
-
+  const getInitials = (name) => {
+    if (!name) return "";
+    const parts = name.split(" ");
+    return (
+      parts[0]?.charAt(0).toUpperCase() +
+      (parts[1]?.charAt(0).toUpperCase() || "")
+    );
+  };
   return (
     <header className="fixed top-0 left-0 w-full bg-[#fcf7f8] text-[#A31621] bg-opacity-90 backdrop-blur-md shadow-lg z-40">
       <div className="container mx-auto px-4 py-3">
@@ -146,8 +153,7 @@ const NavBar = () => {
                       {/* Avatar with First Letter */}
                       <div className="mt-3 flex items-center space-x-3">
                         <div className="w-12 h-12 flex items-center justify-center bg-red-800 text-white text-xl font-bold rounded-full">
-                          {user.name?.charAt(0).toUpperCase()}
-                          {user.name?.charAt(5)?.toUpperCase()}
+                          {getInitials(user.name)}
                         </div>
                         <div className="text-sm">
                           <p>

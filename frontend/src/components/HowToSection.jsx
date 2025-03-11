@@ -34,17 +34,6 @@ const HowToSection = () => {
           </div>
         </div>
       </div>
-
-      <div className="text-center mt-12  p-6 w-auto">
-        <h2 className="text-2xl font-semibold text-[#A31621] mb-4">
-          Build your box
-        </h2>
-        <p className="text-lg text-[#A31621] leading-relaxed">
-          CookiesMan is a premium chocolate & Cookies company specializing in
-          crafting high-quality chocolate chips And Cookies for baking
-          enthusiasts and professionals a like.
-        </p>
-      </div>
     </div>
   );
 };
