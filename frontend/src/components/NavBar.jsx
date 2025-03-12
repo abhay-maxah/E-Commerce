@@ -28,8 +28,11 @@ const NavBar = () => {
   };
   const toggleProfile = () => {
     setIsProfileOpen(!isProfileOpen);
-    setMenuOpen(false);
+    if (!menuOpen) {
+      setMenuOpen(false);
+    }
   };
+
   const closeAll = () => {
     setMenuOpen(false);
     setIsProfileOpen(false);
