@@ -74,3 +74,15 @@ export const removeAllFromCart = async (req, res) => {
     res.status(500).json({ message: "server error", error: error.message });
   }
 };
+
+export const cleanCartAfterPurchese = async (req, res) => {
+  try {
+    const user = req.user;
+    user.cartItems = [];
+    await user.save();
+    res.json({ message: "cart clean SucessFull", cart: user.cart });
+  } catch (error) {
+    console.log("Error in cleanCartAfterPurchese controller", error.message);
+    res.status(500).json({ message: "server error", error: error.message });
+  }
+};
