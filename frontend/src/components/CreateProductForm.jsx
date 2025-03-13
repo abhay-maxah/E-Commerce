@@ -105,8 +105,7 @@ const CreateProductForm = () => {
             onChange={(e) =>
               setNewProduct({ ...newProduct, price: e.target.value })
             }
-            step="0.01"
-            className="mt-1 block w-full bg-transparent  border border-red-300 rounded-md shadow-sm py-2
+            className=" mt-1 block w-full bg-transparent  border border-red-300 rounded-md shadow-sm py-2
             px-3  focus:outline-none focus:ring-2
            focus:ring-red-200 focus:border-red-400"
             required
@@ -148,7 +147,7 @@ const CreateProductForm = () => {
           />
           <label
             htmlFor="image"
-            className="cursor-pointer bg-transparent py-2 px-3 border border-red-400 rounded-md shadow-sm text-sm leading-4 font-medium  hover:bg-red-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+            className="cursor-pointer bg-transparent py-2 px-3 border border-red-400 rounded-md shadow-sm text-sm leading-4 font-medium  hover:bg-red-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
           >
             <Upload className="h-5 w-5 inline-block mr-2" />
             Upload Image
@@ -162,7 +161,7 @@ const CreateProductForm = () => {
           type="submit"
           className="w-full flex justify-center py-2 px-4 rounded-md
 					shadow-sm text-sm font-medium  bg-transparent border border-[#A31621] text-[#A31621] hover:bg-[#A31621] hover:text-white
-					focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+					focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-[#A31621] disabled:opacity-50"
           disabled={loading}
         >
           {loading ? (

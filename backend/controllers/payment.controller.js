@@ -69,6 +69,7 @@ export const createCheckoutSession = async (req, res) => {
     });
 
     if (totalAmount >= 20000) {
+      console.log("Coupon is Created");
       await createNewCoupon(req.user._id);
     }
     res.status(200).json({ id: session.id, totalAmount: totalAmount / 100 });
