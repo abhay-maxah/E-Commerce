@@ -47,7 +47,7 @@ export const useCartStore = create((set, get) => ({
     try {
       await axios.delete("/cart/clean");
       set({ cart: [], coupon: null, total: 0, subtotal: 0 });
-      toast.success("Cart cleared");
+      toast.success("Purchase successful");
     } catch (error) {
       toast.error(error.response.data.message || "An error occurred");
     }

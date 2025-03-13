@@ -8,38 +8,28 @@ const GiftCouponCard = () => {
     useCartStore();
 
   // Debugging: Log store values
-  console.log("GiftCouponCard Rendered");
-  console.log("coupon:", coupon);
-  console.log("isCouponApplied:", isCouponApplied);
-  console.log("userInputCode:", userInputCode);
 
   useEffect(() => {
-    console.log("Fetching my coupon...");
     getMyCoupon();
   }, [getMyCoupon]);
 
   useEffect(() => {
     if (coupon) {
-      console.log("Coupon updated:", coupon);
       setUserInputCode(coupon.code);
     }
   }, [coupon]);
 
   const handleApplyCoupon = () => {
     if (!userInputCode) {
-      console.log("No coupon code entered");
       return;
     }
-    console.log("Applying coupon:", userInputCode);
     applyCoupon(userInputCode);
   };
 
   const handleRemoveCoupon = async () => {
-    console.log("Removing coupon...");
     await removeCoupon();
     setUserInputCode("");
     getMyCoupon();
-    console.log("Coupon removed, resetting input field");
   };
 
   return (

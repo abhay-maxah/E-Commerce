@@ -76,9 +76,9 @@ const ProductsList = () => {
                   onClick={() => toggleFeaturedProduct(product._id)}
                   className={`p-1 rounded-full ${
                     product.isFeatured
-                      ? "bg-yellow-400 text-gray-900"
-                      : "bg-red-600 text-gray-100"
-                  } hover:bg-yellow-500 transition-colors duration-200`}
+                      ? "bg-red-500 text-gray-100"
+                      : "bg-transparent text-gray-900"
+                  } hover:bg-red-500 transition-colors duration-200`}
                 >
                   <Star className="h-5 w-5" />
                 </button>
@@ -86,7 +86,7 @@ const ProductsList = () => {
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <button
                   onClick={() => deleteProduct(product._id)}
-                  className="text-red-400 hover:text-red-300"
+                  className="text-red-500 hover:text-[#A31621]"
                 >
                   <Trash className="h-5 w-5" />
                 </button>
