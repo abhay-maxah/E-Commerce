@@ -2,18 +2,49 @@ import cloudinary from "../lib/cloudinary.js";
 import { redis } from "../lib/redis.js";
 import Product from "../models/product.model.js";
 import sharp from "sharp";
-import { v4 as uuidv4 } from "uuid";
-import fs from "fs";
-import path from "path";
 
+// export const getAllProducts = async (req, res) => {
+//   try {
+//     const products = await Product.find({});
+//     res.status(200).json(products);
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// };
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find({});
-    res.status(200).json(products);
+    let { page = 1, limit = 10, sortBy = "newest" } = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    let sortOptions = {};
+    if (sortBy === "price_low_high") {
+      sortOptions.price = 1;
+    } else if (sortBy === "price_high_low") {
+      sortOptions.price = -1;
+    } else if (sortBy === "oldest") {
+      sortOptions.createdAt = 1;
+    } else {
+      sortOptions.createdAt = -1; // Default to newest
+    }
+
+    const products = await Product.find({})
+      .sort(sortOptions)
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const totalProducts = await Product.countDocuments();
+
+    res.status(200).json({
+      products,
+      totalPages: Math.ceil(totalProducts / limit),
+      currentPage: page,
+    });
   } catch (error) {
     res.status(500).json(error);
   }
 };
+
 export const getFeaturedProducts = async (req, res) => {
   try {
     let featureProduct = await redis.get("feature_products");
@@ -165,6 +196,47 @@ export const getProductsByCategory = async (req, res) => {
     res.status(500).json(error);
   }
 };
+// export const getProductsByCategory = async (req, res) => {
+//   try {
+//     const { category } = req.params;
+//     console.log("Requested Category:", category);
+
+//     const { sortBy, page = 1, limit = 10 } = req.query;
+
+//     // Ensure `page` and `limit` are numbers
+//     const pageNumber = Number(page) || 1;
+//     const limitNumber = Number(limit) || 10;
+//     const skip = (pageNumber - 1) * limitNumber;
+
+//     // Case-insensitive category filter
+//     let filter = { category: { $regex: new RegExp(category, "i") } };
+
+//     let sortOptions = {};
+//     if (sortBy === "new") sortOptions.createdAt = -1;
+//     else if (sortBy === "old") sortOptions.createdAt = 1;
+//     else if (sortBy === "highlow") sortOptions.price = -1;
+//     else if (sortBy === "lowhigh") sortOptions.price = 1;
+
+//     const products = await Product.find(filter)
+//       .sort(sortOptions)
+//       .skip(skip)
+//       .limit(limitNumber); // Ensure limit is applied
+
+//     // Get total product count
+//     const totalProducts = await Product.countDocuments(filter);
+
+//     res.status(200).json({
+//       products,
+//       totalProducts,
+//       currentPage: pageNumber,
+//       totalPages: Math.ceil(totalProducts / limitNumber),
+//     });
+//   } catch (error) {
+//     console.error("Error:", error.message);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 export const toggleFeaturedProduct = async (req, res) => {
   try {
     const { id } = req.params;

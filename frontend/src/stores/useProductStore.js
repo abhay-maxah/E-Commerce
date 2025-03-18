@@ -20,16 +20,39 @@ export const useProductStore = create((set) => ({
       set({ loading: false });
     }
   },
-  fetchAllProducts: async () => {
+  // fetchAllProducts: async () => {
+  //   set({ loading: true });
+  //   try {
+  //     const response = await axios.get("/products");
+  //     set({ products: response.data, loading: false });
+  //   } catch (error) {
+  //     set({ error: "Failed to fetch products", loading: false });
+  //     toast.error(error.response.data.error || "Failed to fetch products");
+  //   }
+  // },
+  fetchAllProducts: async ({
+    page = 1,
+    limit = 10,
+    sortBy = "newest",
+    category = "",
+  } = {}) => {
     set({ loading: true });
     try {
-      const response = await axios.get("/products");
-      set({ products: response.data, loading: false });
+      const response = await axios.get("/products", {
+        params: { page, limit, sortBy, category }, // Send query params
+      });
+
+      set({
+        products: response.data.products,
+        totalPages: response.data.totalPages, // Make sure backend returns total pages
+        loading: false,
+      });
     } catch (error) {
       set({ error: "Failed to fetch products", loading: false });
-      toast.error(error.response.data.error || "Failed to fetch products");
+      toast.error(error.response?.data?.error || "Failed to fetch products");
     }
   },
+
   fetchProductsByCategory: async (category) => {
     set({ isLoading: true, products: [] }); // Clear products before fetching
 
