@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trash, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash, Star, Pencil } from "lucide-react";
 import { useProductStore } from "../stores/useProductStore";
 import LoadingSpinner from "./LoadingSpinner";
 import Pagination from "./Pagination";
+import ProductForm from "./CreateProductForm"; // Import the new form
+
 const ProductsList = () => {
   const {
     products,
@@ -16,10 +18,37 @@ const ProductsList = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState("newest");
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAdding, setIsAdding] = useState(false); // Track if adding a new product
 
   useEffect(() => {
     fetchAllProducts({ page: currentPage, sortBy: sortOption });
   }, [currentPage, sortOption]);
+
+  const openEditModal = (product) => {
+    setEditingProduct(product);
+    setIsAdding(false); // Reset adding state
+    setIsModalOpen(true);
+  };
+
+  const openAddModal = () => {
+    setEditingProduct(null); // No product to edit, so it's a new product
+    setIsAdding(true); // Set adding state
+    setIsModalOpen(true);
+  };
+
+  const handleProductUpdate = () => {
+    setIsModalOpen(false);
+    fetchAllProducts({ page: currentPage, sortBy: sortOption }); // Refresh product list
+  };
+
+  const handleProductAdded = () => {
+    setIsModalOpen(false);
+    setCurrentPage(1); // Reset to the first page to show the newest product
+    setSortOption("newest"); // Ensure newest is applied
+    fetchAllProducts({ page: 1, sortBy: "newest" });
+  };
 
   return (
     <motion.div
@@ -45,6 +74,12 @@ const ProductsList = () => {
             <option value="price_high_low">Price: High to Low</option>
             <option value="price_low_high">Price: Low to High</option>
           </select>
+          <button
+            onClick={openAddModal}
+            className="bg-[#A31621] text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+          >
+            + Add Product
+          </button>
         </div>
       </div>
 
@@ -88,8 +123,9 @@ const ProductsList = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
-                      ${product.price?.toFixed(2)}
+                      ${Number(product.price || 0).toFixed(2)}
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {product.category}
                     </td>
@@ -105,7 +141,13 @@ const ProductsList = () => {
                         <Star className="h-5 w-5" />
                       </button>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3 justify-center">
+                      <button
+                        onClick={() => openEditModal(product)}
+                        className="text-red-500 hover:text-[#A31621]"
+                      >
+                        <Pencil className="h-5 w-5" />
+                      </button>
                       <button
                         onClick={() => deleteProduct(product._id)}
                         className="text-red-500 hover:text-[#A31621]"
@@ -132,6 +174,22 @@ const ProductsList = () => {
         totalPages={totalPages}
         setCurrentPage={setCurrentPage}
       />
+
+      {/* Modal for Product Edit or Add */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 sm:p-6">
+          <div
+            className="bg-white w-full sm:w-[90vw] md:w-[70vw] lg:w-[50vw] xl:w-[40vw] 
+                       max-h-[90vh] overflow-y-auto p-6 rounded-md shadow-lg 
+                       lg:mt-10 lg:max-w-[600px] "
+          >
+            <ProductForm
+              productToEdit={editingProduct}
+              closeModal={isAdding ? handleProductAdded : handleProductUpdate}
+            />
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };

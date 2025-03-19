@@ -97,14 +97,18 @@ export const useCartStore = create((set, get) => ({
     get().calculateTotals();
   },
   calculateTotals: () => {
-    const { cart, coupon } = get();
+    const { cart, coupon, isCouponApplied } = get();
+
+    // Always calculate subtotal (before discount)
     const subtotal = cart.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-    let total = subtotal;
 
-    if (coupon) {
+    let total = subtotal; // Default: no discount applied
+
+    // Apply discount only if a coupon is applied
+    if (coupon && isCouponApplied) {
       const discount = subtotal * (coupon.discountPercentage / 100);
       total = subtotal - discount;
     }

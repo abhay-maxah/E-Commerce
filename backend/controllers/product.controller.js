@@ -2,7 +2,6 @@ import cloudinary from "../lib/cloudinary.js";
 import { redis } from "../lib/redis.js";
 import Product from "../models/product.model.js";
 import sharp from "sharp";
-
 // export const getAllProducts = async (req, res) => {
 //   try {
 //     const products = await Product.find({});
@@ -186,56 +185,53 @@ export const getRecommendeProducts = async (req, res) => {
     res.status(500).json(error);
   }
 };
-export const getProductsByCategory = async (req, res) => {
-  try {
-    const { category } = req.params;
-    const products = await Product.find({ category });
-    res.status(200).json(products);
-  } catch (error) {
-    console.log("Error in category", error.message);
-    res.status(500).json(error);
-  }
-};
 // export const getProductsByCategory = async (req, res) => {
 //   try {
 //     const { category } = req.params;
-//     console.log("Requested Category:", category);
-
-//     const { sortBy, page = 1, limit = 10 } = req.query;
-
-//     // Ensure `page` and `limit` are numbers
-//     const pageNumber = Number(page) || 1;
-//     const limitNumber = Number(limit) || 10;
-//     const skip = (pageNumber - 1) * limitNumber;
-
-//     // Case-insensitive category filter
-//     let filter = { category: { $regex: new RegExp(category, "i") } };
-
-//     let sortOptions = {};
-//     if (sortBy === "new") sortOptions.createdAt = -1;
-//     else if (sortBy === "old") sortOptions.createdAt = 1;
-//     else if (sortBy === "highlow") sortOptions.price = -1;
-//     else if (sortBy === "lowhigh") sortOptions.price = 1;
-
-//     const products = await Product.find(filter)
-//       .sort(sortOptions)
-//       .skip(skip)
-//       .limit(limitNumber); // Ensure limit is applied
-
-//     // Get total product count
-//     const totalProducts = await Product.countDocuments(filter);
-
-//     res.status(200).json({
-//       products,
-//       totalProducts,
-//       currentPage: pageNumber,
-//       totalPages: Math.ceil(totalProducts / limitNumber),
-//     });
+//     const products = await Product.find({ category });
+//     res.status(200).json(products);
 //   } catch (error) {
-//     console.error("Error:", error.message);
-//     res.status(500).json({ error: error.message });
+//     console.log("Error in category", error.message);
+//     res.status(500).json(error);
 //   }
 // };
+export const getProductsByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const { sortBy, page = 1, limit = 3 } = req.query;
+
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 10;
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Case-insensitive category filter
+    let filter = { category: { $regex: new RegExp(category, "i") } };
+
+    let sortOptions = {};
+    if (sortBy === "newest") sortOptions.createdAt = -1;
+    else if (sortBy === "oldest") sortOptions.createdAt = 1;
+    else if (sortBy === "price_high_low") sortOptions.price = -1;
+    else if (sortBy === "price_low_high") sortOptions.price = 1;
+
+    const products = await Product.find(filter)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limitNumber);
+
+    // Get total product count
+    const totalProducts = await Product.countDocuments(filter);
+
+    res.status(200).json({
+      products,
+      totalProducts,
+      currentPage: pageNumber,
+      totalPages: Math.ceil(totalProducts / limitNumber),
+    });
+  } catch (error) {
+    console.error("❌ Error Fetching Products:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
 
 export const toggleFeaturedProduct = async (req, res) => {
   try {
@@ -247,7 +243,6 @@ export const toggleFeaturedProduct = async (req, res) => {
       //update in redis
       await updateFeaturedProductsCache();
       res.status(200).json(updatedProduct);
-      console.log("Upadte a product");
     } else {
       res.status(404).json({ message: "Product not found" });
     }
@@ -265,3 +260,80 @@ async function updateFeaturedProductsCache() {
     res.status(500).json(error);
   }
 }
+export const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { name, price, description, category, image } = req.body;
+
+    // Find product by ID
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    let cloudinaryResponse = null;
+
+    // Only process image if it's changed and it's not already a URL
+    if (image && image !== product.image && !image.startsWith("http")) {
+      if (!image.includes(",")) {
+        return res.status(400).json({ message: "Invalid image format" });
+      }
+
+      try {
+        const imageBuffer = Buffer.from(image.split(",")[1], "base64");
+
+        const compressedBuffer = await sharp(imageBuffer)
+          .resize({ width: 800 })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+
+        cloudinaryResponse = await cloudinary.uploader.upload(
+          `data:image/jpeg;base64,${compressedBuffer.toString("base64")}`,
+          { folder: "products" }
+        );
+      } catch (err) {
+        console.error("Image processing error:", err.message);
+        return res.status(400).json({ message: "Invalid image format" });
+      }
+    }
+
+    // Prepare updated data
+    const updatedData = {
+      ...(name && { name }),
+      ...(price && { price }),
+      ...(description && { description }),
+      ...(category && { category }),
+      ...(cloudinaryResponse?.secure_url && {
+        image: cloudinaryResponse.secure_url,
+      }),
+    };
+    const updatedProduct = await Product.findByIdAndUpdate(id, updatedData, {
+      new: true,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Product updated successfully", updatedProduct });
+  } catch (error) {
+    console.error("Error in updateProduct controller:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getDetailForSpecificProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id).populate("category").lean();
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(200).json(product);
+  } catch (error) {
+    console.error(
+      "Error in getDetailForSpecificProduct controller",
+      error.message
+    );
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

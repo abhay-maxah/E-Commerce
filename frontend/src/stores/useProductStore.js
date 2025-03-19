@@ -53,12 +53,39 @@ export const useProductStore = create((set) => ({
     }
   },
 
-  fetchProductsByCategory: async (category) => {
-    set({ isLoading: true, products: [] }); // Clear products before fetching
+  // fetchProductsByCategory: async (category) => {
+  //   set({ isLoading: true, products: [] }); // Clear products before fetching
+
+  //   try {
+  //     const response = await axios.get(`/products/category/${category}`);
+  //     set({ products: response.data, isLoading: false });
+  //   } catch (error) {
+  //     const errorMessage =
+  //       error.response?.data?.error || "Failed to fetch products";
+  //     set({ error: errorMessage, isLoading: false });
+  //     toast.error(errorMessage);
+  //   }
+  // },
+  fetchProductsByCategory: async (
+    category,
+    sortBy = "newest",
+    page = 1,
+    limit = 3
+  ) => {
+    set({ isLoading: true, products: [], error: null }); // Reset state before fetching
 
     try {
-      const response = await axios.get(`/products/category/${category}`);
-      set({ products: response.data, isLoading: false });
+      const response = await axios.get(`/products/category/${category}`, {
+        params: { sortBy, page, limit },
+      });
+
+      set({
+        products: response.data.products,
+        totalProducts: response.data.totalProducts,
+        currentPage: response.data.currentPage,
+        totalPages: response.data.totalPages,
+        isLoading: false,
+      });
     } catch (error) {
       const errorMessage =
         error.response?.data?.error || "Failed to fetch products";
@@ -108,6 +135,40 @@ export const useProductStore = create((set) => ({
     } catch (error) {
       set({ error: "Failed to fetch products", loading: false });
       console.log("Error fetching featured products:", error);
+    }
+  },
+  fetchProductById: async (productId) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axios.get(`/products/specific/${productId}`);
+      set({ product: response.data, loading: false });
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to fetch product";
+      set({ error: errorMessage, loading: false });
+      console.error("Error fetching product by ID:", error);
+    }
+  },
+
+  updateProduct: async (productId, updatedProduct) => {
+    set({ loading: true });
+    try {
+      const response = await axios.put(
+        `/products/${productId}`,
+        updatedProduct
+      );
+      set((state) => ({
+        products: state.products.map((product) =>
+          product._id === productId
+            ? { ...product, ...response.data.updatedData }
+            : product
+        ),
+        loading: false,
+      }));
+      toast.success("Product updated successfully");
+    } catch (error) {
+      set({ loading: false });
+      toast.error(error.response?.data?.message || "Failed to update product");
     }
   },
 }));
