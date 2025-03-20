@@ -4,7 +4,7 @@ import { Trash, Star, Pencil } from "lucide-react";
 import { useProductStore } from "../stores/useProductStore";
 import LoadingSpinner from "./LoadingSpinner";
 import Pagination from "./Pagination";
-import ProductForm from "./CreateProductForm"; // Import the new form
+import ProductForm from "./CreateProductForm";
 
 const ProductsList = () => {
   const {
@@ -18,23 +18,26 @@ const ProductsList = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOption, setSortOption] = useState("newest");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [editingProduct, setEditingProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAdding, setIsAdding] = useState(false); // Track if adding a new product
+  const [isAdding, setIsAdding] = useState(false);
 
   useEffect(() => {
-    fetchAllProducts({ page: currentPage, sortBy: sortOption });
-  }, [currentPage, sortOption]);
+    fetchAllProducts({
+      page: currentPage,
+      sortBy: sortOption,
+      category: categoryFilter,
+    });
+  }, [currentPage, sortOption, categoryFilter]);
 
+  const handleSortChange = (e) => {
+    setSortOption(e.target.value);
+    setCurrentPage(1); // Reset to page 1 when sorting changes
+  };
   const openEditModal = (product) => {
     setEditingProduct(product);
     setIsAdding(false); // Reset adding state
-    setIsModalOpen(true);
-  };
-
-  const openAddModal = () => {
-    setEditingProduct(null); // No product to edit, so it's a new product
-    setIsAdding(true); // Set adding state
     setIsModalOpen(true);
   };
 
@@ -49,6 +52,10 @@ const ProductsList = () => {
     setSortOption("newest"); // Ensure newest is applied
     fetchAllProducts({ page: 1, sortBy: "newest" });
   };
+  const handleCategoryChange = (e) => {
+    setCategoryFilter(e.target.value);
+    setCurrentPage(1); // Reset to page 1 when category changes
+  };
 
   return (
     <motion.div
@@ -57,7 +64,6 @@ const ProductsList = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
     >
-      {/* Sorting & Filter Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 border-b border-[#A31621]">
         <h2 className="text-lg font-semibold text-[#A31621]">Product List</h2>
         <div className="flex items-center gap-2">
@@ -67,25 +73,32 @@ const ProductsList = () => {
           <select
             className="border border-[#A31621] p-2 rounded-md text-[#A31621] bg-transparent focus:outline-none cursor-pointer transition"
             value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
+            onChange={handleSortChange}
           >
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
             <option value="price_high_low">Price: High to Low</option>
             <option value="price_low_high">Price: Low to High</option>
           </select>
-          <button
-            onClick={openAddModal}
-            className="bg-[#A31621] text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+
+          <label className="text-[#A31621] font-medium text-sm sm:text-base">
+            Category:
+          </label>
+          <select
+            className="border border-[#A31621] p-2 rounded-md text-[#A31621] bg-transparent focus:outline-none cursor-pointer transition"
+            value={categoryFilter}
+            onChange={handleCategoryChange}
           >
-            + Add Product
-          </button>
+            <option value="all">All</option>
+            <option value="Cookies">Cookies</option>
+            <option value="Chocolates">Chocolates</option>
+          </select>
         </div>
       </div>
 
-      {loading && <LoadingSpinner className="w-auto h-auto" />}
-
-      {!loading && (
+      {loading ? (
+        <LoadingSpinner className="w-auto h-auto" />
+      ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse shadow-md">
             <thead className="bg-[#A31621] text-white border border-[#A31621]">
@@ -125,7 +138,6 @@ const ProductsList = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
                       ${Number(product.price || 0).toFixed(2)}
                     </td>
-
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {product.category}
                     </td>
@@ -174,7 +186,6 @@ const ProductsList = () => {
         totalPages={totalPages}
         setCurrentPage={setCurrentPage}
       />
-
       {/* Modal for Product Edit or Add */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 sm:p-6">

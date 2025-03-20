@@ -2,6 +2,7 @@ import cloudinary from "../lib/cloudinary.js";
 import { redis } from "../lib/redis.js";
 import Product from "../models/product.model.js";
 import sharp from "sharp";
+import mongoose from "mongoose";
 // export const getAllProducts = async (req, res) => {
 //   try {
 //     const products = await Product.find({});
@@ -12,7 +13,7 @@ import sharp from "sharp";
 // };
 export const getAllProducts = async (req, res) => {
   try {
-    let { page = 1, limit = 10, sortBy = "newest" } = req.query;
+    let { page = 1, limit = 10, sortBy = "newest", category = "" } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
 
@@ -27,12 +28,17 @@ export const getAllProducts = async (req, res) => {
       sortOptions.createdAt = -1; // Default to newest
     }
 
-    const products = await Product.find({})
+    let filterOptions = {};
+    if (category && category !== "all") {
+      filterOptions.category = category;
+    }
+
+    const products = await Product.find(filterOptions)
       .sort(sortOptions)
       .skip((page - 1) * limit)
       .limit(limit);
 
-    const totalProducts = await Product.countDocuments();
+    const totalProducts = await Product.countDocuments(filterOptions);
 
     res.status(200).json({
       products,
@@ -40,7 +46,7 @@ export const getAllProducts = async (req, res) => {
       currentPage: page,
     });
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json({ error: "Server error, unable to fetch products" });
   }
 };
 
@@ -324,6 +330,9 @@ export const updateProduct = async (req, res) => {
 export const getDetailForSpecificProduct = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid or missing product ID" });
+    }
     const product = await Product.findById(id).populate("category").lean();
     if (!product) {
       return res.status(404).json({ message: "Product not found" });

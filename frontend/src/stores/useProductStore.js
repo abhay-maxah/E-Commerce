@@ -30,6 +30,7 @@ export const useProductStore = create((set) => ({
   //     toast.error(error.response.data.error || "Failed to fetch products");
   //   }
   // },
+
   fetchAllProducts: async ({
     page = 1,
     limit = 10,
@@ -44,7 +45,7 @@ export const useProductStore = create((set) => ({
 
       set({
         products: response.data.products,
-        totalPages: response.data.totalPages, // Make sure backend returns total pages
+        totalPages: response.data.totalPages, // Ensure backend returns totalPages
         loading: false,
       });
     } catch (error) {
