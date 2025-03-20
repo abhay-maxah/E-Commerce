@@ -10,44 +10,20 @@ import {
   Search,
   CookieIcon,
 } from "lucide-react";
-import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { NavLink, Link, useLocation } from "react-router-dom";
+import { useState } from "react";
 import { useUserStore } from "../stores/useUserStore.js";
 import { useCartStore } from "../stores/useCartStore.js";
-import { useProductStore } from "../stores/useProductStore.js";
+import SearchBar from "./SearchBar.jsx";
 const NavBar = () => {
   const { user, logout } = useUserStore();
-  const { getAllProductsForSearch, products } = useProductStore();
+
   const isAdmin = user?.role === "admin";
   const { cart } = useCartStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const location = useLocation();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (searchQuery) {
-      getAllProductsForSearch().then(() => {
-        setFilteredProducts(
-          products.filter((product) =>
-            product.name.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-        );
-      });
-    } else {
-      setFilteredProducts([]);
-    }
-  }, [searchQuery, getAllProductsForSearch, products]);
-  const handleProductClick = (productId) => {
-    setSearchQuery("");
-    setFilteredProducts([]);
-    document.activeElement.blur(); // Ensure the input loses focus
-    setTimeout(() => {
-      navigate(`/product/${productId}`);
-    }, 100); // Delay navigation slightly to allow state update
-  };
+  const location = useLocation();
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -74,45 +50,20 @@ const NavBar = () => {
   };
   return (
     <header className="fixed top-0 left-0 w-full bg-[#fcf7f8] text-[#A31621] bg-opacity-90 backdrop-blur-md shadow-lg z-40">
-      <div className="lg:mx-0 mx-auto px-4 py-3 lg:py-0  xl:py-3">
-        <div className="flex justify-between items-center  space-x-2">
+      <div className=" lg:mx-0 mx-auto px-4 py-2 md:py-3">
+        <div className="flex justify-between items-center">
           {/* Logo */}
           <Link
             to="/"
-            className="text-2xl font-bold text-[#A31621] flex items-center space-x-2"
+            className="text-2xl font-bold text-[#A31621] flex items-center space-x-2 mr-3"
           >
             <CookieIcon className="mr-2" size={24} />
-            COOKIES MAN
+            COOKIES<span className="text-[#fff]"></span>MAN
           </Link>
-          {/* Search Bar */}
-          <div className=" md:block relative w-1/3">
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#A31621]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onBlur={() => setTimeout(() => setFilteredProducts([]), 200)}
-            />
-            <Search
-              className="absolute right-3 top-2 text-gray-500"
-              size={20}
-            />
+          {/* Search Bar Component */}
 
-            {filteredProducts.length > 0 && (
-              <ul className="absolute w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg">
-                {filteredProducts.map((product) => (
-                  <li
-                    key={product._id}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleProductClick(product._id)}
-                  >
-                    {product.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <SearchBar />
+
           {/* Hamburger Icon */}
           <div className="lg:hidden">
             {menuOpen ? (
@@ -132,7 +83,7 @@ const NavBar = () => {
 
           {/* Navigation Links */}
           <nav
-            className={`lg:flex items-center gap-4 ${
+            className={`ml-6 lg:flex items-center  md:gap-[20px] lg:gap-2 xl:gap-6 ${
               menuOpen
                 ? "flex flex-col justify-center items-center w-4/5 max-w-sm bg-[#fcf7f8] rounded-lg shadow-lg p-6 absolute top-16 right-0"
                 : "hidden"
@@ -146,7 +97,7 @@ const NavBar = () => {
               <NavLink
                 key={to}
                 to={to}
-                className={`block lg:inline-block py-2 px-6 rounded-md text-center font-semibold ${
+                className={`block lg:inline-block py-2 px-2 rounded-md text-center font-semibold ${
                   isProfileOpen
                     ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                     : location.pathname === to
@@ -163,7 +114,7 @@ const NavBar = () => {
               <>
                 <NavLink
                   to="/cart"
-                  className={`relative block lg:inline-block py-2 px-6 rounded-md text-center font-semibold ${
+                  className={`relative flex  py-2 px-2 rounded-md text-center font-semibold ${
                     isProfileOpen
                       ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                       : location.pathname === "/cart"
@@ -184,7 +135,7 @@ const NavBar = () => {
                 {/* Profile Button */}
                 <div className="relative">
                   <button
-                    className={`flex items-center py-2 px-6 rounded-md text-center font-semibold ${
+                    className={`flex items-center py-2 px-2 lg:px-2 rounded-md text-sm md:text-base font-semibold ${
                       isProfileOpen
                         ? "bg-[#A31621] text-white"
                         : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
@@ -237,7 +188,7 @@ const NavBar = () => {
             {isAdmin && (
               <NavLink
                 to="/secret-dashboard"
-                className={`block lg:inline-block py-2 px-6 rounded-md text-center font-semibold ${
+                className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
                   isProfileOpen
                     ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                     : location.pathname === "/secret-dashboard"
@@ -247,26 +198,26 @@ const NavBar = () => {
                 onClick={closeAll}
               >
                 <Lock size={18} className="inline-block mr-1" />
-                Dashboard
+                <span>Dashboard</span>
               </NavLink>
             )}
 
             {user ? (
               <button
-                className="block lg:inline-block py-2 px-6 rounded-md text-center font-semibold text-[#A31621] hover:text-white hover:bg-red-700"
+                className="flex items-center py-2 px-2 rounded-md text-center font-semibold text-[#A31621] hover:text-white hover:bg-red-700"
                 onClick={() => {
                   logout();
                   closeAll();
                 }}
               >
-                <LogOut size={18} className="inline-block mr-2" />
-                Log Out
+                <LogOut size={18} className=" mr-2" />
+                <span>LogOut</span>
               </button>
             ) : (
               <>
                 <NavLink
                   to="/signup"
-                  className={`block lg:inline-block py-2 px-6 rounded-md text-center font-semibold ${
+                  className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
                     isProfileOpen
                       ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                       : location.pathname === "/signup"
@@ -275,12 +226,12 @@ const NavBar = () => {
                   }`}
                   onClick={closeAll}
                 >
-                  <UserPlus size={18} className="inline-block mr-1" /> Sign Up
+                  <UserPlus size={18} className=" mr-1" /> SignUp
                 </NavLink>
 
                 <NavLink
                   to="/login"
-                  className={`block lg:inline-block py-2 px-6 rounded-md text-center font-semibold ${
+                  className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
                     isProfileOpen
                       ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                       : location.pathname === "/login"
