@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import heroVideo from "../assets/HeroCard.mp4";
-import image3 from "../assets/HeroCard4.jpg";
+import image3 from "../assets/Herocard4.jpg";
 
 const backgrounds = [heroVideo, image3];
 export default function HeroCard() {
