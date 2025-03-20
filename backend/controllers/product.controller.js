@@ -3,14 +3,14 @@ import { redis } from "../lib/redis.js";
 import Product from "../models/product.model.js";
 import sharp from "sharp";
 import mongoose from "mongoose";
-// export const getAllProducts = async (req, res) => {
-//   try {
-//     const products = await Product.find({});
-//     res.status(200).json(products);
-//   } catch (error) {
-//     res.status(500).json(error);
-//   }
-// };
+export const getAllProductsForSearch = async (req, res) => {
+  try {
+    const products = await Product.find({});
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
 export const getAllProducts = async (req, res) => {
   try {
     let { page = 1, limit = 10, sortBy = "newest", category = "" } = req.query;

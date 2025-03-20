@@ -7,20 +7,47 @@ import {
   Menu,
   UserIcon,
   X,
+  Search,
   CookieIcon,
 } from "lucide-react";
-import { NavLink, Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useUserStore } from "../stores/useUserStore.js";
 import { useCartStore } from "../stores/useCartStore.js";
-
+import { useProductStore } from "../stores/useProductStore.js";
 const NavBar = () => {
   const { user, logout } = useUserStore();
+  const { getAllProductsForSearch, products } = useProductStore();
   const isAdmin = user?.role === "admin";
   const { cart } = useCartStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (searchQuery) {
+      getAllProductsForSearch().then(() => {
+        setFilteredProducts(
+          products.filter((product) =>
+            product.name.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+        );
+      });
+    } else {
+      setFilteredProducts([]);
+    }
+  }, [searchQuery, getAllProductsForSearch, products]);
+  const handleProductClick = (productId) => {
+    setSearchQuery("");
+    setFilteredProducts([]);
+    document.activeElement.blur(); // Ensure the input loses focus
+    setTimeout(() => {
+      navigate(`/product/${productId}`);
+    }, 100); // Delay navigation slightly to allow state update
+  };
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -47,8 +74,8 @@ const NavBar = () => {
   };
   return (
     <header className="fixed top-0 left-0 w-full bg-[#fcf7f8] text-[#A31621] bg-opacity-90 backdrop-blur-md shadow-lg z-40">
-      <div className="container mx-auto px-4 py-3 lg:py-0 xl:py-3">
-        <div className="flex justify-between items-center">
+      <div className="lg:mx-0 mx-auto px-4 py-3 lg:py-0  xl:py-3">
+        <div className="flex justify-between items-center  space-x-2">
           {/* Logo */}
           <Link
             to="/"
@@ -57,7 +84,35 @@ const NavBar = () => {
             <CookieIcon className="mr-2" size={24} />
             COOKIES MAN
           </Link>
+          {/* Search Bar */}
+          <div className=" md:block relative w-1/3">
+            <input
+              type="text"
+              placeholder="Search products..."
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#A31621]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onBlur={() => setTimeout(() => setFilteredProducts([]), 200)}
+            />
+            <Search
+              className="absolute right-3 top-2 text-gray-500"
+              size={20}
+            />
 
+            {filteredProducts.length > 0 && (
+              <ul className="absolute w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg">
+                {filteredProducts.map((product) => (
+                  <li
+                    key={product._id}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleProductClick(product._id)}
+                  >
+                    {product.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           {/* Hamburger Icon */}
           <div className="lg:hidden">
             {menuOpen ? (

@@ -7,6 +7,7 @@ import {
   getFeaturedProducts,
   createProduct,
   getDetailForSpecificProduct,
+  getAllProductsForSearch,
   deleteProduct,
   updateProduct,
 } from "../controllers/product.controller.js";
@@ -14,6 +15,7 @@ import { adminRoute, protectRoute } from "../Middleware/auth.middleware.js";
 const router = e.Router();
 
 router.get("/", protectRoute, adminRoute, getAllProducts);
+router.get("/search", getAllProductsForSearch);
 router.get("/featured", getFeaturedProducts);
 router.get("/category/:category", getProductsByCategory);
 router.get("/specific/:id", getDetailForSpecificProduct);

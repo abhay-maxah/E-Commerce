@@ -26,7 +26,7 @@ const ProductDetail = () => {
     }
   }, [productId]);
 
-  if (loading || checkingAuth) return <LoadingSpinner />;
+  if ((!product && loading) || checkingAuth) return <LoadingSpinner />;
   if (error)
     return <p className="text-red-500 text-center font-semibold">{error}</p>;
 
