@@ -5,52 +5,30 @@ import {
   LogOut,
   Lock,
   Menu,
-  UserIcon,
   X,
-  Search,
+  ClipboardList,
   CookieIcon,
+  User,
 } from "lucide-react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useUserStore } from "../stores/useUserStore.js";
 import { useCartStore } from "../stores/useCartStore.js";
 import SearchBar from "./SearchBar.jsx";
+
 const NavBar = () => {
   const { user, logout } = useUserStore();
-
   const isAdmin = user?.role === "admin";
   const { cart } = useCartStore();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-
   const location = useLocation();
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-    setIsProfileOpen(false);
-  };
-  const toggleProfile = () => {
-    setIsProfileOpen(!isProfileOpen);
-    if (!menuOpen) {
-      setMenuOpen(false);
-    }
-  };
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const closeAll = () => setMenuOpen(false);
 
-  const closeAll = () => {
-    setMenuOpen(false);
-    setIsProfileOpen(false);
-  };
-  const getInitials = (name) => {
-    if (!name) return "";
-    const parts = name.split(" ");
-    return (
-      parts[0]?.charAt(0).toUpperCase() +
-      (parts[1]?.charAt(0).toUpperCase() || "")
-    );
-  };
   return (
     <header className="fixed top-0 left-0 w-full bg-[#fcf7f8] text-[#A31621] bg-opacity-90 backdrop-blur-md shadow-lg z-40">
-      <div className=" lg:mx-0 mx-auto px-4 py-2 md:py-3">
+      <div className="lg:mx-0 mx-auto px-4 py-2 md:py-3">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link
@@ -60,8 +38,8 @@ const NavBar = () => {
             <CookieIcon className="mr-2" size={24} />
             COOKIES<span className="text-[#fff]"></span>MAN
           </Link>
-          {/* Search Bar Component */}
 
+          {/* Search Bar */}
           <SearchBar />
 
           {/* Hamburger Icon */}
@@ -83,7 +61,7 @@ const NavBar = () => {
 
           {/* Navigation Links */}
           <nav
-            className={`ml-6 lg:flex items-center  md:gap-[20px] lg:gap-2 xl:gap-6 ${
+            className={`ml-6 lg:flex items-center md:gap-[20px] lg:gap-1 xl:gap-4 ${
               menuOpen
                 ? "flex flex-col justify-center items-center w-4/5 max-w-sm bg-[#fcf7f8] rounded-lg shadow-lg p-6 absolute top-16 right-0"
                 : "hidden"
@@ -98,9 +76,7 @@ const NavBar = () => {
                 key={to}
                 to={to}
                 className={`block lg:inline-block py-2 px-2 rounded-md text-center font-semibold ${
-                  isProfileOpen
-                    ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                    : location.pathname === to
+                  location.pathname === to
                     ? "bg-[#A31621] text-white"
                     : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                 }`}
@@ -112,12 +88,11 @@ const NavBar = () => {
 
             {user && (
               <>
+                {/* Cart */}
                 <NavLink
                   to="/cart"
-                  className={`relative flex  py-2 px-2 rounded-md text-center font-semibold ${
-                    isProfileOpen
-                      ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                      : location.pathname === "/cart"
+                  className={`relative flex py-2 px-2 rounded-md text-center font-semibold ${
+                    location.pathname === "/cart"
                       ? "bg-[#A31621] text-white"
                       : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                   }`}
@@ -132,66 +107,42 @@ const NavBar = () => {
                   )}
                 </NavLink>
 
-                {/* Profile Button */}
-                <div className="relative">
-                  <button
-                    className={`flex items-center py-2 px-2 lg:px-2 rounded-md text-sm md:text-base font-semibold ${
-                      isProfileOpen
-                        ? "bg-[#A31621] text-white"
-                        : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                    }`}
-                    onClick={toggleProfile}
-                  >
-                    <UserIcon className="inline-block mr-1" size={20} />
-                    <span>Profile</span>
-                  </button>
+                {/* Profile Section */}
+                <NavLink
+                  to="/my-profile"
+                  className={`flex items-center py-2 px-2 rounded-md text-sm md:text-base font-semibold ${
+                    location.pathname === "/my-profile"
+                      ? "bg-[#A31621] text-white"
+                      : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
+                  }`}
+                  onClick={closeAll}
+                >
+                  <User size={20} className="mr-2" />
+                  <span>Profile</span>
+                </NavLink>
 
-                  {/* Profile Card */}
-                  {isProfileOpen && (
-                    <div className="absolute left-1/2 translate-x-[-50%] mt-2 w-64 bg-white shadow-xl rounded-lg p-4 text-black border border-gray-300 z-50 sm:left-auto sm:right-0 sm:translate-x-0">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-semibold">Profile</h3>
-                        <button onClick={closeAll}>
-                          <X
-                            size={20}
-                            className="text-gray-500 hover:text-black"
-                          />
-                        </button>
-                      </div>
-
-                      {/* Avatar with First Letter */}
-                      <div className="mt-3 flex items-center space-x-3">
-                        <div className="w-12 h-12 flex items-center justify-center bg-red-800 text-white text-xl font-bold rounded-full">
-                          {getInitials(user.name)}
-                        </div>
-                        <div className="text-sm">
-                          <p>
-                            <span className="font-semibold">Name:</span>{" "}
-                            {user.name}
-                          </p>
-                          <p>
-                            <span className="font-semibold">Email:</span>{" "}
-                            {user.email}
-                          </p>
-                          <p>
-                            <span className="font-semibold">Role:</span>{" "}
-                            {user.role}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                {/* Orders Section */}
+                <NavLink
+                  to="/order-list"
+                  className={`flex items-center py-2 px-2 rounded-md text-sm md:text-base font-semibold ${
+                    location.pathname === "/order-list"
+                      ? "bg-[#A31621] text-white"
+                      : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
+                  }`}
+                  onClick={closeAll}
+                >
+                  <ClipboardList size={20} className="mr-2" />
+                  <span>Orders</span>
+                </NavLink>
               </>
             )}
 
+            {/* Admin Dashboard */}
             {isAdmin && (
               <NavLink
                 to="/secret-dashboard"
                 className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
-                  isProfileOpen
-                    ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                    : location.pathname === "/secret-dashboard"
+                  location.pathname === "/secret-dashboard"
                     ? "bg-[#A31621] text-white"
                     : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                 }`}
@@ -202,6 +153,7 @@ const NavBar = () => {
               </NavLink>
             )}
 
+            {/* Authentication Buttons */}
             {user ? (
               <button
                 className="flex items-center py-2 px-2 rounded-md text-center font-semibold text-[#A31621] hover:text-white hover:bg-red-700"
@@ -210,7 +162,7 @@ const NavBar = () => {
                   closeAll();
                 }}
               >
-                <LogOut size={18} className=" mr-2" />
+                <LogOut size={18} className="mr-2" />
                 <span>LogOut</span>
               </button>
             ) : (
@@ -218,23 +170,19 @@ const NavBar = () => {
                 <NavLink
                   to="/signup"
                   className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
-                    isProfileOpen
-                      ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                      : location.pathname === "/signup"
+                    location.pathname === "/signup"
                       ? "bg-[#A31621] text-white"
                       : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                   }`}
                   onClick={closeAll}
                 >
-                  <UserPlus size={18} className=" mr-1" /> SignUp
+                  <UserPlus size={18} className="mr-1" /> SignUp
                 </NavLink>
 
                 <NavLink
                   to="/login"
                   className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
-                    isProfileOpen
-                      ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                      : location.pathname === "/login"
+                    location.pathname === "/login"
                       ? "bg-[#A31621] text-white"
                       : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                   }`}

@@ -49,6 +49,7 @@ const ProductDetail = () => {
       const res = await axios.post("/payments/create-checkout-session", {
         products: product ? [product] : cart, // If product is provided, process only that product, else process cart
         couponCode: coupon ? coupon.code : null,
+        address
       });
 
       const session = res.data;
@@ -90,7 +91,7 @@ const ProductDetail = () => {
         </h2>
         <label className="text-gray-600 font-semibold text-lg">Price:</label>
         <p className="text-3xl font-bold text-gray-800 mt-1">
-          ${product?.price}
+          Rs.{product?.price}
         </p>
         <p className="mt-4 text-lg text-gray-600 leading-relaxed">
           {product?.description}
