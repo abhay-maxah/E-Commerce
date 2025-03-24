@@ -45,7 +45,6 @@ export const useUserStore = create((set, get) => ({
   getAllUsers: async () => {
     try {
       const res = await axios.get("/auth");
-      console.log(res.data)
       set({ users: res.data });
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");

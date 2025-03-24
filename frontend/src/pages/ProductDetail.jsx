@@ -1,13 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProductStore } from "../stores/useProductStore";
 import { useUserStore } from "../stores/useUserStore";
+import { useAddressStore } from "../stores/useAddressStore";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { loadStripe } from "@stripe/stripe-js";
 import { ShoppingCart } from "lucide-react";
 import { useCartStore } from "../stores/useCartStore";
 import axios from "../lib/axios";
 import toast from "react-hot-toast";
+import AddressSelectionModal from "../components/AddressSelectionModal";
 
 const stripePromise = loadStripe(
   "pk_test_51QzEaMEEwnxF6uaXFg88SDeBc2gwYDHPmRvr50njYWLZheM2IhU3jCIC5LMgu0iE3ESsQCZJx4USDXBgr5H0oUUR00eenCOvyw"
@@ -18,13 +20,24 @@ const ProductDetail = () => {
   const { product, fetchProductById, loading, error } = useProductStore();
   const { user, checkingAuth } = useUserStore();
   const navigate = useNavigate();
-  const { addToCart, cart, coupon } = useCartStore();
+  const { addToCart, cart, coupon, isCouponApplied } = useCartStore();
+  const { addresses, getAllAddresses } = useAddressStore();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
 
   useEffect(() => {
     if (productId) {
       fetchProductById(productId);
     }
+    getAllAddresses();
   }, [productId]);
+
+  useEffect(() => {
+    if (addresses.length === 1) {
+      setSelectedAddress(addresses[0]);
+    }
+  }, [addresses]);
 
   if ((!product && loading) || checkingAuth) return <LoadingSpinner />;
   if (error)
@@ -44,12 +57,24 @@ const ProductDetail = () => {
       return;
     }
 
+    if (addresses.length > 1 && !selectedAddress) {
+      setIsModalOpen(true);
+      return;
+    }
+
+    if (!selectedAddress) {
+      toast.error("Please add an address before checkout.");
+      return;
+    }
+
     const stripe = await stripePromise;
     try {
       const res = await axios.post("/payments/create-checkout-session", {
-        products: product ? [product] : cart, // If product is provided, process only that product, else process cart
-        couponCode: coupon ? coupon.code : null,
-        address
+        products: product
+          ? [{ ...product, quantity: 1 }]
+          : cart.map((item) => ({ ...item, quantity: 1 })),
+        couponCode: isCouponApplied && coupon ? coupon.code : null,
+        address: JSON.stringify(selectedAddress),
       });
 
       const session = res.data;
@@ -83,13 +108,9 @@ const ProductDetail = () => {
         />
       </div>
       <div className="w-full md:w-3/5">
-        <label className="text-gray-600 font-semibold text-lg">
-          Product Name:
-        </label>
         <h2 className="text-5xl font-extrabold text-[#A31621] mb-4 leading-tight">
           {product?.name}
         </h2>
-        <label className="text-gray-600 font-semibold text-lg">Price:</label>
         <p className="text-3xl font-bold text-gray-800 mt-1">
           Rs.{product?.price}
         </p>
@@ -135,6 +156,18 @@ const ProductDetail = () => {
           </button>
         </div>
       </div>
+
+      {isModalOpen && (
+        <AddressSelectionModal
+          addresses={addresses}
+          onClose={() => setIsModalOpen(false)}
+          onSelect={(address) => {
+            setSelectedAddress(address);
+            setIsModalOpen(false);
+            handleBuyNow();
+          }}
+        />
+      )}
     </div>
   );
 };

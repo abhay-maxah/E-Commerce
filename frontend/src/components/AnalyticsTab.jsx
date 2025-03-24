@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import axios from "../lib/axios";
-import { Users, Package, ShoppingCart, DollarSign } from "lucide-react";
+import { Users, Package, ShoppingCart, IndianRupee } from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
 import UserList from "./AnalyticsTab/UserList";
 import ProductsList from "./ProductsList";
@@ -75,7 +75,7 @@ const AnalyticsTab = () => {
         <AnalyticsCard
           title="Total Revenue"
           value={`${analyticsData.totalRevenue.toLocaleString()}`}
-          icon={DollarSign}
+          icon={IndianRupee}
           color="from-emerald-500 to-lime-700"
           onClick={() => setSelectedTab("graph")}
         />
@@ -93,7 +93,9 @@ const AnalyticsTab = () => {
               <XAxis dataKey="name" stroke="#92969c" />
               <YAxis yAxisId="left" stroke="#92969c" />
               <YAxis yAxisId="right" orientation="right" stroke="#92969c" />
-              <Tooltip contentStyle={{ backgroundColor: "#FFEBEE", color: "#A31621" }} />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#FFEBEE", color: "#A31621" }}
+              />
               <Legend />
               <Line
                 yAxisId="left"

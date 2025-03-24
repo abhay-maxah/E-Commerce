@@ -61,11 +61,7 @@ const NavBar = () => {
 
           {/* Navigation Links */}
           <nav
-<<<<<<< HEAD
-            className={`ml-6 lg:flex items-center  md:gap-[20px] lg:gap-2 xl:gap-1 ${
-=======
             className={`ml-6 lg:flex items-center md:gap-[20px] lg:gap-1 xl:gap-4 ${
->>>>>>> 75d9392cf10c99e31eb17fe0aae7ca3951d447f3
               menuOpen
                 ? "flex flex-col justify-center items-center w-4/5 max-w-sm bg-[#fcf7f8] rounded-lg shadow-lg p-6 absolute top-16 right-0"
                 : "hidden"
@@ -79,15 +75,8 @@ const NavBar = () => {
               <NavLink
                 key={to}
                 to={to}
-<<<<<<< HEAD
-                className={`block lg:inline-block py-3 px-5 rounded-md text-center font-semibold ${
-                  isProfileOpen
-                    ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                    : location.pathname === to
-=======
                 className={`block lg:inline-block py-2 px-2 rounded-md text-center font-semibold ${
                   location.pathname === to
->>>>>>> 75d9392cf10c99e31eb17fe0aae7ca3951d447f3
                     ? "bg-[#A31621] text-white"
                     : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                 }`}
@@ -102,15 +91,8 @@ const NavBar = () => {
                 {/* Cart */}
                 <NavLink
                   to="/cart"
-<<<<<<< HEAD
-                  className={`relative flex  py-3 px-5 rounded-md text-center font-semibold ${
-                    isProfileOpen
-                      ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                      : location.pathname === "/cart"
-=======
                   className={`relative flex py-2 px-2 rounded-md text-center font-semibold ${
                     location.pathname === "/cart"
->>>>>>> 75d9392cf10c99e31eb17fe0aae7ca3951d447f3
                       ? "bg-[#A31621] text-white"
                       : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                   }`}
@@ -125,21 +107,6 @@ const NavBar = () => {
                   )}
                 </NavLink>
 
-<<<<<<< HEAD
-                {/* Profile Button */}
-                <div className="relative">
-                  <button
-                    className={`flex items-center py-3 px-5 lg:px-2 rounded-md text-sm md:text-base font-semibold ${
-                      isProfileOpen
-                        ? "bg-[#A31621] text-white"
-                        : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                    }`}
-                    onClick={toggleProfile}
-                  >
-                    <UserIcon className="inline-block mr-1" size={20} />
-                    <span>Profile</span>
-                  </button>
-=======
                 {/* Profile Section */}
                 <NavLink
                   to="/my-profile"
@@ -153,7 +120,6 @@ const NavBar = () => {
                   <User size={20} className="mr-2" />
                   <span>Profile</span>
                 </NavLink>
->>>>>>> 75d9392cf10c99e31eb17fe0aae7ca3951d447f3
 
                 {/* Orders Section */}
                 <NavLink
@@ -175,15 +141,8 @@ const NavBar = () => {
             {isAdmin && (
               <NavLink
                 to="/secret-dashboard"
-<<<<<<< HEAD
-                className={`flex items-center py-3 px-5 rounded-md text-center font-semibold ${
-                  isProfileOpen
-                    ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                    : location.pathname === "/secret-dashboard"
-=======
                 className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
                   location.pathname === "/secret-dashboard"
->>>>>>> 75d9392cf10c99e31eb17fe0aae7ca3951d447f3
                     ? "bg-[#A31621] text-white"
                     : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                 }`}
@@ -197,7 +156,7 @@ const NavBar = () => {
             {/* Authentication Buttons */}
             {user ? (
               <button
-                className="flex items-center py-3 px-5 rounded-md text-center font-semibold text-[#A31621] hover:text-white hover:bg-[#A31621]"
+                className="flex items-center py-2 px-2 rounded-md text-center font-semibold text-[#A31621] hover:text-white hover:bg-red-700"
                 onClick={() => {
                   logout();
                   closeAll();
@@ -210,15 +169,8 @@ const NavBar = () => {
               <>
                 <NavLink
                   to="/signup"
-<<<<<<< HEAD
-                  className={`flex items-center py-3 px-5 rounded-md text-center font-semibold ${
-                    isProfileOpen
-                      ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                      : location.pathname === "/signup"
-=======
                   className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
                     location.pathname === "/signup"
->>>>>>> 75d9392cf10c99e31eb17fe0aae7ca3951d447f3
                       ? "bg-[#A31621] text-white"
                       : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                   }`}
@@ -229,15 +181,8 @@ const NavBar = () => {
 
                 <NavLink
                   to="/login"
-<<<<<<< HEAD
-                  className={`flex items-center py-3 px-5 rounded-md text-center font-semibold ${
-                    isProfileOpen
-                      ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
-                      : location.pathname === "/login"
-=======
                   className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
                     location.pathname === "/login"
->>>>>>> 75d9392cf10c99e31eb17fe0aae7ca3951d447f3
                       ? "bg-[#A31621] text-white"
                       : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                   }`}

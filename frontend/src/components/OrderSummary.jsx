@@ -7,12 +7,15 @@ import { loadStripe } from "@stripe/stripe-js";
 import axios from "../lib/axios";
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import AddressSelectionModal from "./AddressSelectionModal"; 
+import AddressSelectionModal from "./AddressSelectionModal";
 
-const stripePromise = loadStripe("pk_test_51R5Jf0B4G0LQCAKT7mDq1NpXrx5PepPySHNiOMKd3VwysYNYJSpCu5btddUg83iMa0vdmJQgDNr2U1DSE106XKjd00JmWWVHDG");
+const stripePromise = loadStripe(
+  "pk_test_51QzEaMEEwnxF6uaXFg88SDeBc2gwYDHPmRvr50njYWLZheM2IhU3jCIC5LMgu0iE3ESsQCZJx4USDXBgr5H0oUUR00eenCOvyw"
+);
 
 const OrderSummary = () => {
-  const { total, subtotal, coupon, isCouponApplied, cart, clearCart } = useCartStore();
+  const { total, subtotal, coupon, isCouponApplied, cart, clearCart } =
+    useCartStore();
   const { addresses, getAllAddresses } = useAddressStore();
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,20 +42,15 @@ const OrderSummary = () => {
       setIsModalOpen(true);
       return;
     }
-
-    console.log("➡️ Auto-selected Address:", addresses[0]);
     processOrder(addresses[0]); // If only one address, proceed automatically
   };
 
   const processOrder = async (address) => {
     if (!address) {
       toast.error("Please select an address before proceeding.");
-      console.error("❌ Error: No address provided to processOrder.");
       return;
     }
-  
-    console.log("✅ Processing Order with Address:", address);
-  
+
     const stripe = await stripePromise;
     try {
       // 🔹 Step 1: Create a Stripe Checkout Session
@@ -61,17 +59,16 @@ const OrderSummary = () => {
         couponCode: isCouponApplied && coupon ? coupon.code : null,
         address: JSON.stringify(address),
       });
-  
+
       const session = res.data;
-      console.log("💳 Stripe Session Created:", session);
-  
+
       if (!session.id) {
         throw new Error("Stripe session ID is missing.");
       }
-  
+
       // 🔹 Step 2: Redirect to Stripe for Payment
       const result = await stripe.redirectToCheckout({ sessionId: session.id });
-  
+
       if (result.error) {
         console.error("❌ Stripe Checkout Error:", result.error);
       } else {
@@ -79,11 +76,10 @@ const OrderSummary = () => {
         setTimeout(() => clearCart(), 500);
       }
     } catch (error) {
-      console.error("❌ Payment Processing Error:", error);
       toast.error("Payment processing failed. Please try again.");
     }
   };
-  
+
   return (
     <>
       <motion.div
@@ -110,8 +106,12 @@ const OrderSummary = () => {
 
             {coupon && isCouponApplied && (
               <dl className="flex items-center justify-between gap-4">
-                <dt className="text-base font-normal">Coupon ({coupon.code})</dt>
-                <dd className="text-base font-medium">-{coupon.discountPercentage}%</dd>
+                <dt className="text-base font-normal">
+                  Coupon ({coupon.code})
+                </dt>
+                <dd className="text-base font-medium">
+                  -{coupon.discountPercentage}%
+                </dd>
               </dl>
             )}
 
@@ -150,7 +150,7 @@ const OrderSummary = () => {
           onSelect={(address) => {
             setSelectedAddress(address);
             setIsModalOpen(false);
-              processOrder(address);
+            processOrder(address);
           }}
         />
       )}

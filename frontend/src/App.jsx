@@ -16,7 +16,7 @@ import PurchaseCancelPage from "./pages/PurchaseCancelPage";
 import ErrorPage from "./pages/ErrorPage";
 import ProductDetail from "./pages/ProductDetail";
 import UserList from "./components/AnalyticsTab/UserList";
-import AllOrder from './pages/AllOrder'
+import AllOrder from "./pages/AllOrder";
 import AddressForm from "./pages/AddressForm";
 import UserProfile from "./pages/UserProfile";
 function App() {
@@ -76,11 +76,19 @@ function App() {
             />
 
             <Route path="/error" element={<ErrorPage />} />
-            <Route path="/user" element={user ?<UserList/>:<Navigate to="/login"/>}/>
-            <Route path="/order-list" element={user ? <AllOrder/>:<Navigate to="/login"/>}/>
-            <Route path="/address" element={user ?<AddressForm/>:<Navigate to="/login"/>} />
-            <Route path="/my-profile"element={user?<UserProfile/>:<Navigate to="/login"/>}/>
-            
+            <Route
+              path="/order-list"
+              element={user ? <AllOrder /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/address"
+              element={user ? <AddressForm /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/my-profile"
+              element={user ? <UserProfile /> : <Navigate to="/login" />}
+            />
+
             <Route
               path="*"
               element={

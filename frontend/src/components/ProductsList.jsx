@@ -103,42 +103,74 @@ const ProductsList = () => {
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full shadow-md rounded-2xl overflow-hidden">
-            <thead className="bg-[#A31621] text-white"> {/* Removed top border here */}
+            <thead className="bg-[#A31621] text-white">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Sr No</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Product</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Featured</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
+                  Sr No
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
+                  Product
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
+                  Price
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
+                  Category
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
+                  Featured
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-[#A31621]">
               {products.length > 0 ? (
                 products.map((product, index) => (
                   <tr key={product._id} className="hover:bg-red-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{index + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap flex items-center gap-3">
-                      <img className="h-10 w-10 rounded-full object-cover" src={product.image} alt={product.name} />
-                      <span className="text-sm font-medium">{product.name}</span>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      {index + 1}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">{Number(product.price || 0).toFixed(2)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">{product.category}</td>
+                    <td className="px-6 py-4 whitespace-nowrap flex items-center gap-3">
+                      <img
+                        className="h-10 w-10 rounded-full object-cover"
+                        src={product.image}
+                        alt={product.name}
+                      />
+                      <span className="text-sm font-medium">
+                        {product.name}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+                      {Number(product.price || 0).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {product.category}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
                         onClick={() => toggleFeaturedProduct(product._id)}
                         className={`p-1 rounded-full ${
-                          product.isFeatured ? "bg-red-500 text-white" : "bg-gray-200 text-gray-900"
+                          product.isFeatured
+                            ? "bg-red-500 text-white"
+                            : "bg-gray-200 text-gray-900"
                         } hover:bg-red-500 transition-colors duration-200`}
                       >
                         <Star className="h-5 w-5" />
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3 justify-center">
-                      <button onClick={() => openEditModal(product)} className="text-red-500 hover:text-[#A31621]">
+                      <button
+                        onClick={() => openEditModal(product)}
+                        className="text-red-500 hover:text-[#A31621]"
+                      >
                         <Pencil className="h-5 w-5" />
                       </button>
-                      <button onClick={() => deleteProduct(product._id)} className="text-red-500 hover:text-[#A31621]">
+                      <button
+                        onClick={() => deleteProduct(product._id)}
+                        className="text-red-500 hover:text-[#A31621]"
+                      >
                         <Trash className="h-5 w-5" />
                       </button>
                     </td>
@@ -156,12 +188,19 @@ const ProductsList = () => {
         </div>
       )}
 
-      <Pagination currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        setCurrentPage={setCurrentPage}
+      />
 
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 sm:p-6">
           <div className="bg-white w-full sm:w-[90vw] md:w-[70vw] lg:w-[50vw] xl:w-[40vw] max-h-[90vh] overflow-y-auto p-6 rounded-md shadow-lg lg:mt-10 lg:max-w-[600px]">
-            <ProductForm productToEdit={editingProduct} closeModal={isAdding ? handleProductAdded : handleProductUpdate} />
+            <ProductForm
+              productToEdit={editingProduct}
+              closeModal={isAdding ? handleProductAdded : handleProductUpdate}
+            />
           </div>
         </div>
       )}
