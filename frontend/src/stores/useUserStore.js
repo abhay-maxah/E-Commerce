@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import axios from "../lib/axios";
 import { toast } from "react-hot-toast";
-
 export const useUserStore = create((set, get) => ({
   user: null,
   loading: false,
@@ -43,7 +42,23 @@ export const useUserStore = create((set, get) => ({
       );
     }
   },
-
+  getAllUsers: async () => {
+    try {
+      const res = await axios.get("/auth");
+      console.log(res.data)
+      set({ users: res.data });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "An error occurred");
+    }
+  },
+  deleteUser: async (id) => {
+    try {
+      await axios.delete(`/auth/${id}`);
+      toast.success("User deleted successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "An error occurred");
+    }
+  },
   checkAuth: async () => {
     set({ checkingAuth: true });
     try {
