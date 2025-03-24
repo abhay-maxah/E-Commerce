@@ -165,7 +165,6 @@ const SignUpPage = () => {
                 </button>
               </div>
             </div>
-
             <button
               type="submit"
               className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium bg-transparent border border-[#A31621] hover:bg-[#A31621] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out disabled:opacity-50"

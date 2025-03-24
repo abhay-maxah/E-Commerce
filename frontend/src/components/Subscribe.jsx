@@ -8,7 +8,7 @@ const Subscribe = () => {
       alert("Enter a email");
     }
     setEmail("");
-    alert(`Subscribe Done With EmailID : ${email}`);
+    alert(`Subscribe Done With EmailID : {email}`);
   };
   const handleEmail = (e) => {
     setEmail(e.target.value);

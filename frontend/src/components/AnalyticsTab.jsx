@@ -2,6 +2,10 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import axios from "../lib/axios";
 import { Users, Package, ShoppingCart, DollarSign } from "lucide-react";
+import LoadingSpinner from "./LoadingSpinner";
+import UserList from "./AnalyticsTab/UserList";
+import ProductsList from "./ProductsList";
+import TotalSale from "./AnalyticsTab/TotalSale";
 import {
   LineChart,
   Line,
@@ -22,6 +26,7 @@ const AnalyticsTab = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [dailySalesData, setDailySalesData] = useState([]);
+  const [selectedTab, setSelectedTab] = useState("graph");
 
   useEffect(() => {
     const fetchAnalyticsData = async () => {
@@ -40,7 +45,7 @@ const AnalyticsTab = () => {
   }, []);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner />;
   }
 
   return (
@@ -51,74 +56,85 @@ const AnalyticsTab = () => {
           value={analyticsData.users.toLocaleString()}
           icon={Users}
           color="from-emerald-500 to-teal-700"
+          onClick={() => setSelectedTab("users")}
         />
         <AnalyticsCard
           title="Total Products"
           value={analyticsData.products.toLocaleString()}
           icon={Package}
           color="from-emerald-500 to-green-700"
+          onClick={() => setSelectedTab("products")}
         />
         <AnalyticsCard
           title="Total Sales"
           value={analyticsData.totalSales.toLocaleString()}
           icon={ShoppingCart}
           color="from-emerald-500 to-cyan-700"
+          onClick={() => setSelectedTab("sales")}
         />
         <AnalyticsCard
           title="Total Revenue"
-          value={`$${analyticsData.totalRevenue.toLocaleString()}`}
+          value={`${analyticsData.totalRevenue.toLocaleString()}`}
           icon={DollarSign}
           color="from-emerald-500 to-lime-700"
+          onClick={() => setSelectedTab("graph")}
         />
       </div>
-      <motion.div
-        className="bg-gradient-to-br from-red-200 to-red-100 opacity-90 rounded-lg p-6 shadow-xl"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.25 }}
-      >
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={dailySalesData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#92969c" />
-            <XAxis dataKey="name" stroke="#92969c" />
-            <YAxis yAxisId="left" stroke="#92969c" />
-            <YAxis yAxisId="right" orientation="right" stroke="#92969c" />
-            <Tooltip
-              contentStyle={{ backgroundColor: "#FFEBEE", color: "#A31621" }}
-            />
-            <Legend />
-            <Line
-              yAxisId="left"
-              type="monotone"
-              dataKey="sales"
-              stroke="#FF1744"
-              strokeWidth={3}
-              activeDot={{ r: 10, stroke: "#FFF", strokeWidth: 2 }}
-              name="Sales"
-            />
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="revenue"
-              stroke="#255ab0"
-              strokeWidth={3}
-              activeDot={{ r: 10, stroke: "#FFF", strokeWidth: 2 }}
-              name="Revenue"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </motion.div>
+      {selectedTab === "graph" ? (
+        <motion.div
+          className="bg-gradient-to-br from-red-200 to-red-100 opacity-90 rounded-lg p-6 shadow-xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
+        >
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={dailySalesData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#92969c" />
+              <XAxis dataKey="name" stroke="#92969c" />
+              <YAxis yAxisId="left" stroke="#92969c" />
+              <YAxis yAxisId="right" orientation="right" stroke="#92969c" />
+              <Tooltip contentStyle={{ backgroundColor: "#FFEBEE", color: "#A31621" }} />
+              <Legend />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="sales"
+                stroke="#FF1744"
+                strokeWidth={3}
+                activeDot={{ r: 10, stroke: "#FFF", strokeWidth: 2 }}
+                name="Sales"
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="revenue"
+                stroke="#255ab0"
+                strokeWidth={3}
+                activeDot={{ r: 10, stroke: "#FFF", strokeWidth: 2 }}
+                name="Revenue"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </motion.div>
+      ) : selectedTab === "products" ? (
+        <ProductsList />
+      ) : selectedTab === "sales" ? (
+        <TotalSale />
+      ) : (
+        <UserList />
+      )}
     </div>
   );
 };
 export default AnalyticsTab;
 
-const AnalyticsCard = ({ title, value, icon: Icon, color }) => (
+const AnalyticsCard = ({ title, value, icon: Icon, color, onClick }) => (
   <motion.div
-    className={`bg-transparent rounded-lg p-6 shadow-lg overflow-hidden  relative ${color}`}
+    className={`bg-transparent rounded-lg p-6 shadow-lg overflow-hidden relative {color} cursor-pointer`}
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
+    onClick={onClick}
   >
     <div className="flex justify-between items-center">
       <div className="z-10">

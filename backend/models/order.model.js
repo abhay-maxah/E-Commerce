@@ -7,6 +7,11 @@ const orderSchema = new mongoose.Schema(
 			ref: "User",
 			required: true,
 		},
+		address: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Address",
+			required: true,
+		},
 		products: [
 			{
 				product: {
@@ -31,9 +36,13 @@ const orderSchema = new mongoose.Schema(
 			required: true,
 			min: 0,
 		},
+		orderStatus: {
+			type: String,
+			enum: ["Pending", "Processing", "Shipped", "Delivered", "Canceled"],
+			default: "Pending",
+		},
 		stripeSessionId: {
 			type: String,
-			unique: true,
 		},
 	},
 	{ timestamps: true }

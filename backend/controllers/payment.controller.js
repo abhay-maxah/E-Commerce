@@ -1,23 +1,28 @@
 import Coupon from "../models/coupon.model.js";
 import Order from "../models/order.model.js";
 import { stripe } from "../lib/stripe.js";
+
 export const createCheckoutSession = async (req, res) => {
   try {
-    const { products, couponCode } = req.body;
+    const { products, couponCode, address } = req.body; 
 
     if (!Array.isArray(products) || products.length === 0) {
       return res.status(400).json({ error: "Invalid or empty products array" });
     }
 
+    if (!address) {
+      return res.status(400).json({ error: "Address is required." });
+    }
+
     let totalAmount = 0;
 
     const lineItems = products.map((product) => {
-      const amount = Math.round(product.price * 100); // stripe wants u to send in the format of cents
+      const amount = Math.round(product.price * 100);
       totalAmount += amount * product.quantity;
 
       return {
         price_data: {
-          currency: "usd",
+          currency: "inr",
           product_data: {
             name: product.name,
             images: [product.image],
@@ -58,6 +63,7 @@ export const createCheckoutSession = async (req, res) => {
       metadata: {
         userId: req.user._id.toString(),
         couponCode: couponCode || "",
+        address: address, // Store address in metadata
         products: JSON.stringify(
           products.map((p) => ({
             id: p._id,
@@ -72,20 +78,28 @@ export const createCheckoutSession = async (req, res) => {
       console.log("Coupon is Created");
       await createNewCoupon(req.user._id);
     }
+
     res.status(200).json({ id: session.id, totalAmount: totalAmount / 100 });
   } catch (error) {
     console.error("Error processing checkout:", error);
-    res
-      .status(500)
-      .json({ message: "Error processing checkout", error: error.message });
+    res.status(500).json({ message: "Error processing checkout", error: error.message });
   }
 };
 
 export const checkoutSuccess = async (req, res) => {
   try {
     const { sessionId } = req.body;
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
 
+    if (!sessionId) {
+      return res.status(400).json({ message: "Missing sessionId" });
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+ // **Prevent duplicate order creation**
+ const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
+ if (existingOrder) {
+     return res.status(400).json({ message: "Order already created for this session." });
+ }
     if (session.payment_status === "paid") {
       if (session.metadata.couponCode) {
         await Coupon.findOneAndUpdate(
@@ -98,17 +112,18 @@ export const checkoutSuccess = async (req, res) => {
           }
         );
       }
-
-      // create a new Order
+      const parsedAddress = JSON.parse(session.metadata.address);
+      // Create a new Order with the address
       const products = JSON.parse(session.metadata.products);
       const newOrder = new Order({
         user: session.metadata.userId,
+        address: parsedAddress, // Include address
         products: products.map((product) => ({
           product: product.id,
           quantity: product.quantity,
           price: product.price,
         })),
-        totalAmount: session.amount_total / 100, // convert from cents to dollars,
+        totalAmount: session.amount_total / 100, // Convert from cents to dollars
         stripeSessionId: sessionId,
       });
 
@@ -116,8 +131,7 @@ export const checkoutSuccess = async (req, res) => {
 
       res.status(200).json({
         success: true,
-        message:
-          "Payment successful, order created, and coupon deactivated if used.",
+        message: "Payment successful, order created, and coupon deactivated if used.",
         orderId: newOrder._id,
       });
     }
@@ -150,6 +164,5 @@ async function createNewCoupon(userId) {
   });
 
   await newCoupon.save();
-
   return newCoupon;
 }
