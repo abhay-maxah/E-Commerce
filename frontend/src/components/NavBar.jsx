@@ -83,7 +83,7 @@ const NavBar = () => {
 
           {/* Navigation Links */}
           <nav
-            className={`ml-6 lg:flex items-center  md:gap-[20px] lg:gap-2 xl:gap-6 ${
+            className={`ml-6 lg:flex items-center  md:gap-[20px] lg:gap-2 xl:gap-1 ${
               menuOpen
                 ? "flex flex-col justify-center items-center w-4/5 max-w-sm bg-[#fcf7f8] rounded-lg shadow-lg p-6 absolute top-16 right-0"
                 : "hidden"
@@ -97,7 +97,7 @@ const NavBar = () => {
               <NavLink
                 key={to}
                 to={to}
-                className={`block lg:inline-block py-2 px-2 rounded-md text-center font-semibold ${
+                className={`block lg:inline-block py-3 px-5 rounded-md text-center font-semibold ${
                   isProfileOpen
                     ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                     : location.pathname === to
@@ -114,7 +114,7 @@ const NavBar = () => {
               <>
                 <NavLink
                   to="/cart"
-                  className={`relative flex  py-2 px-2 rounded-md text-center font-semibold ${
+                  className={`relative flex  py-3 px-5 rounded-md text-center font-semibold ${
                     isProfileOpen
                       ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                       : location.pathname === "/cart"
@@ -135,7 +135,7 @@ const NavBar = () => {
                 {/* Profile Button */}
                 <div className="relative">
                   <button
-                    className={`flex items-center py-2 px-2 lg:px-2 rounded-md text-sm md:text-base font-semibold ${
+                    className={`flex items-center py-3 px-5 lg:px-2 rounded-md text-sm md:text-base font-semibold ${
                       isProfileOpen
                         ? "bg-[#A31621] text-white"
                         : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
@@ -188,7 +188,7 @@ const NavBar = () => {
             {isAdmin && (
               <NavLink
                 to="/secret-dashboard"
-                className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
+                className={`flex items-center py-3 px-5 rounded-md text-center font-semibold ${
                   isProfileOpen
                     ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                     : location.pathname === "/secret-dashboard"
@@ -204,7 +204,7 @@ const NavBar = () => {
 
             {user ? (
               <button
-                className="flex items-center py-2 px-2 rounded-md text-center font-semibold text-[#A31621] hover:text-white hover:bg-red-700"
+                className="flex items-center py-3 px-5 rounded-md text-center font-semibold text-[#A31621] hover:text-white hover:bg-[#A31621]"
                 onClick={() => {
                   logout();
                   closeAll();
@@ -217,7 +217,7 @@ const NavBar = () => {
               <>
                 <NavLink
                   to="/signup"
-                  className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
+                  className={`flex items-center py-3 px-5 rounded-md text-center font-semibold ${
                     isProfileOpen
                       ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                       : location.pathname === "/signup"
@@ -231,7 +231,7 @@ const NavBar = () => {
 
                 <NavLink
                   to="/login"
-                  className={`flex items-center py-2 px-2 rounded-md text-center font-semibold ${
+                  className={`flex items-center py-3 px-5 rounded-md text-center font-semibold ${
                     isProfileOpen
                       ? "text-[#A31621] hover:bg-[#A31621] hover:text-white"
                       : location.pathname === "/login"
