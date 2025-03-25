@@ -24,6 +24,9 @@ const CartPage = () => {
               <EmptyCartUI />
             ) : (
               <div className="space-y-6">
+                <h3 className="text-2xl font-semibold text-[#A31621] mb-4">
+                  Cart Items
+                </h3>
                 {cart.map((item) => (
                   <CartItem key={item._id} item={item} />
                 ))}
@@ -54,7 +57,7 @@ const EmptyCartUI = () => {
   const navigate = useNavigate();
 
   const handleStartShopping = () => {
-    navigate("/", { state: { scrollToCategories: true } });
+    navigate("/category/Cookies");
   };
 
   return (

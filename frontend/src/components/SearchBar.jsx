@@ -10,22 +10,30 @@ const SearchBar = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (searchQuery) {
+    let isMounted = true; // Prevents setting state on unmounted component
+
+    if (searchQuery.length >= 3) {
       getAllProductsForSearch().then(() => {
-        setFilteredProducts(
-          products.filter((product) =>
-            product.name.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-        );
+        if (isMounted) {
+          setFilteredProducts(
+            products.filter((product) =>
+              product.name.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+          );
+        }
       });
     } else {
       setFilteredProducts([]);
     }
-  }, [searchQuery, getAllProductsForSearch, products]);
+
+    return () => {
+      isMounted = false; // Cleanup function to prevent unwanted re-renders
+    };
+  }, [searchQuery]); // Removed unnecessary dependencies to prevent re-renders
 
   const handleProductClick = (productId) => {
     setSearchQuery("");
-    setFilteredProducts([]);
+    setFilteredProducts([]); // Ensure suggestions disappear before navigation
     navigate(`/product/${productId}`);
   };
 
@@ -37,7 +45,7 @@ const SearchBar = () => {
         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#A31621]"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        onBlur={() => setTimeout(() => setFilteredProducts([]), 200)}
+        onBlur={() => setTimeout(() => setFilteredProducts([]), 300)}
       />
       <Search className="absolute right-3 top-2 text-gray-500" size={20} />
 
@@ -47,6 +55,7 @@ const SearchBar = () => {
             <li
               key={product._id}
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              onMouseDown={(e) => e.preventDefault()} // Prevents blur from closing list too early
               onClick={() => handleProductClick(product._id)}
             >
               {product.name}

@@ -7,6 +7,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { loadStripe } from "@stripe/stripe-js";
 import { ShoppingCart } from "lucide-react";
 import { useCartStore } from "../stores/useCartStore";
+
 import axios from "../lib/axios";
 import toast from "react-hot-toast";
 import AddressSelectionModal from "../components/AddressSelectionModal";
@@ -30,14 +31,20 @@ const ProductDetail = () => {
     if (productId) {
       fetchProductById(productId);
     }
-    getAllAddresses();
   }, [productId]);
 
   useEffect(() => {
+    if (user) {
+      getAllAddresses();
+    }
+  }, [user]); // This ensures addresses are fetched when user logs in
+
+  useEffect(() => {
+    console.log(addresses, "length", addresses.length);
     if (addresses.length === 1) {
       setSelectedAddress(addresses[0]);
     }
-  }, [addresses]);
+  }, [addresses, setSelectedAddress]);
 
   if ((!product && loading) || checkingAuth) return <LoadingSpinner />;
   if (error)
@@ -54,6 +61,10 @@ const ProductDetail = () => {
   const handleBuyNow = async () => {
     if (!user) {
       toast.error("You need to log in to proceed with checkout.");
+      return;
+    }
+    if (!selectedAddress && addresses.length === 1) {
+      setSelectedAddress(addresses[0]); // Set the address explicitly
       return;
     }
 
@@ -108,7 +119,7 @@ const ProductDetail = () => {
         />
       </div>
       <div className="w-full md:w-3/5">
-        <h2 className="text-5xl font-extrabold text-[#A31621] mb-4 leading-tight">
+        <h2 className="text-2xl lg:text-4xl xl:text-4xl md:text-3xl sm:text-2xl font-extrabold text-[#A31621] mb-4 leading-tight">
           {product?.name}
         </h2>
         <p className="text-3xl font-bold text-gray-800 mt-1">

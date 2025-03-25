@@ -20,11 +20,12 @@ export const useAddressStore = create((set) => ({
 
   // Add new address
   addAddress: async (address) => {
+    if (useAddressStore.getState().loading) return; // Prevent duplicate calls
     set({ loading: true });
     try {
       const res = await axios.post("/address", address);
       set((state) => ({
-        addresses: [...state.addresses, res.data], // ✅ Append new address
+        addresses: [...state.addresses, res.data],
         loading: false,
       }));
       toast.success("Address added successfully");
@@ -40,7 +41,7 @@ export const useAddressStore = create((set) => ({
     try {
       await axios.delete(`/address/${id}`);
       set((state) => ({
-        addresses: state.addresses.filter((addr) => addr.id !== id), // ✅ Remove deleted address
+        addresses: state.addresses.filter((addr) => addr.id !== id),
         loading: false,
       }));
       toast.success("Address deleted successfully");

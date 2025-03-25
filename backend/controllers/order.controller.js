@@ -30,16 +30,13 @@ export const generateInvoice = async (req, res) => {
     const fileName = `invoice-${orderId}.pdf`;
     res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
     res.setHeader("Content-Type", "application/pdf");
-
     doc.pipe(res);
 
-    // **Company Header**
     doc
       .fontSize(26)
       .fillColor("#A31621")
       .text("CookiesMan", { align: "center", underline: true });
     doc.moveDown(0.5);
-
     doc
       .fontSize(12)
       .fillColor("black")
@@ -50,35 +47,38 @@ export const generateInvoice = async (req, res) => {
     });
     doc.moveDown();
 
-    // **Generate Random Invoice Number**
-    const randomSuffix = Math.floor(100000 + Math.random() * 900000); // Generate 6-digit random number
+    const randomSuffix = Math.floor(100000 + Math.random() * 900000);
     const invoiceNumber = `INV-67DFB1${randomSuffix}`;
-    const invoiceDate = new Date().toLocaleDateString("en-IN"); // Format: 3/23/2025
+    const invoiceDate = new Date().toLocaleDateString("en-IN");
 
-    // **Invoice Details**
     doc.fontSize(14).fillColor("#333").text(`Invoice Number: ${invoiceNumber}`);
     doc.text(`Invoice Date: ${invoiceDate}`);
     doc.text(`Payment Method: Card Payment`);
     doc.moveDown();
 
-    // **Billing Details**
     doc
       .fontSize(16)
       .fillColor("#A31621")
       .text("Billing To", { underline: true });
     doc.moveDown(0.5);
-    doc.fontSize(12).fillColor("black").text(`Name :${order.user.name}`);
+    doc
+      .fontSize(12)
+      .fillColor("black")
+      .text(`Name: ${order.user?.name || "N/A"}`);
     doc.text(
-      `Address: ${order.address.houseName}, ${order.address.streetAddress}`
+      `Address: ${order.address?.houseName || "N/A"}, ${
+        order.address?.streetAddress || "N/A"
+      }`
     );
     doc.text(
-      `${order.address.city}, ${order.address.state} - ${order.address.zipCode}`
+      `${order.address?.city || "N/A"}, ${order.address?.state || "N/A"} - ${
+        order.address?.zipCode || "N/A"
+      }`
     );
-    doc.text(`India`);
-    doc.text(`Phone: ${order.address.phoneNumber}`);
+    doc.text("India");
+    doc.text(`Phone: ${order.address?.phoneNumber || "N/A"}`);
     doc.moveDown();
 
-    // **Order Summary**
     doc
       .fontSize(16)
       .fillColor("#A31621")
@@ -86,24 +86,32 @@ export const generateInvoice = async (req, res) => {
     doc.moveDown(0.5);
 
     let calculatedTotal = 0;
-    order.products.forEach((product, index) => {
-      const productTotal = product.quantity * product.product.price;
-      calculatedTotal += productTotal;
+    if (order.products.length > 0) {
+      order.products.forEach((product, index) => {
+        const productName = product.product?.name || "Unknown Product";
+        const productPrice = product.product?.price || 0;
+        const productTotal = product.quantity * productPrice;
+        calculatedTotal += productTotal;
 
-      doc.fontSize(12).fillColor("black");
-      doc.text(`${index + 1}. ${product.product.name}`, { bold: true });
-      doc.text(`Quantity: ${product.quantity}`);
-      doc.text(`Price: ₹${product.product.price.toFixed(2)}`);
-      doc.text(`Subtotal: ₹${productTotal.toFixed(2)}`);
+        doc.fontSize(12).fillColor("black");
+        doc.text(`${index + 1}. ${productName}`, { bold: true });
+        doc.text(`Quantity: ${product.quantity}`);
+        doc.text(`Price: Rs.${productPrice.toFixed(2)}`);
+        doc.text(`Subtotal: Rs.${productTotal.toFixed(2)}`);
+        doc.moveDown();
+      });
+    } else {
+      doc
+        .fontSize(12)
+        .fillColor("black")
+        .text("No products available in this order.");
       doc.moveDown();
-    });
+    }
 
-    // **Calculate Discount Properly**
     const totalAmount = order.totalAmount || calculatedTotal;
-    const discount = calculatedTotal - totalAmount; // Correct discount calculation
+    const discount = calculatedTotal - totalAmount;
     const payableAmount = totalAmount;
 
-    // **Billing Summary**
     doc
       .fontSize(16)
       .fillColor("#A31621")
@@ -126,7 +134,6 @@ export const generateInvoice = async (req, res) => {
       );
     doc.moveDown(1);
 
-    // **Thank You Note**
     doc
       .fontSize(14)
       .fillColor("#A31621")
@@ -135,15 +142,14 @@ export const generateInvoice = async (req, res) => {
       align: "center",
     });
 
-    doc.end(); // Ensure stream is properly closed
+    doc.end();
   } catch (error) {
     console.error("Error generating invoice:", error);
-
     if (!res.headersSent) {
       res.setHeader("Content-Type", "application/json");
       res.status(500).json({ message: "Server error", error: error.message });
     } else {
-      res.destroy(error); // Properly close the stream if response has already started
+      res.destroy(error);
     }
   }
 };

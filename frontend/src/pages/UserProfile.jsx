@@ -8,7 +8,8 @@ import AddressForm from "./AddressForm";
 
 const UserProfile = () => {
   const { user, checkAuth } = useUserStore();
-  const { addresses, getAllAddresses, deleteAddress, loading } = useAddressStore();
+  const { addresses, getAllAddresses, deleteAddress, loading } =
+    useAddressStore();
   const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -24,7 +25,10 @@ const UserProfile = () => {
   const getInitials = (name) => {
     if (!name) return "";
     const parts = name.split(" ");
-    return parts[0]?.charAt(0).toUpperCase() + (parts[1]?.charAt(0).toUpperCase() || "");
+    return (
+      parts[0]?.charAt(0).toUpperCase() +
+      (parts[1]?.charAt(0).toUpperCase() || "")
+    );
   };
 
   const handleCloseModal = async () => {
@@ -42,7 +46,9 @@ const UserProfile = () => {
     >
       <div className="w-full max-w-3xl p-6 bg-white shadow-md rounded-md border">
         {/* Centered Profile Title */}
-        <h1 className="text-2xl font-bold text-[#A31621] text-center mb-6">Profile</h1>
+        <h1 className="text-4xl font-bold text-[#A31621] text-center mb-6">
+          My Profile
+        </h1>
 
         {!user ? (
           <div className="text-center text-gray-500">Loading...</div>
@@ -63,8 +69,13 @@ const UserProfile = () => {
                   <p className="text-gray-600">Role: {user?.role}</p>
                 </div>
                 <div className="border-t pt-4 mt-4 space-y-2">
-                  <div><span className="font-semibold">Email:</span> {user?.email}</div>
-                  <div><span className="font-semibold">Phone:</span> {addresses[0]?.phoneNumber || "N/A"}</div>
+                  <div>
+                    <span className="font-semibold">Email:</span> {user?.email}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Phone:</span>{" "}
+                    {addresses[0]?.phoneNumber || "N/A"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -87,8 +98,13 @@ const UserProfile = () => {
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
                   <div className="text-sm text-gray-700">
-                    <p className="font-semibold">{address.houseName}, {address.optionalAddress}</p>
-                    <p>{address.streetAddress}, {address.city}, {address.state} - {address.zipCode}</p>
+                    <p className="font-semibold">
+                      {address.houseName}, {address.optionalAddress}
+                    </p>
+                    <p>
+                      {address.streetAddress}, {address.city}, {address.state} -{" "}
+                      {address.zipCode}
+                    </p>
                   </div>
                   <div className="flex gap-3">
                     <button
@@ -138,7 +154,10 @@ const UserProfile = () => {
             >
               <X size={20} />
             </button>
-            <AddressForm existingAddress={selectedAddress} closeModal={handleCloseModal} />
+            <AddressForm
+              existingAddress={selectedAddress}
+              closeModal={handleCloseModal}
+            />
           </div>
         </div>
       )}

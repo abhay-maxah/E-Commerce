@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
 import CategoryItem from "../components/CategoryItem";
 import { useProductStore } from "../stores/useProductStore";
 import FeaturedProducts from "../components/FeaturedProducts";
@@ -11,24 +10,16 @@ import Footer from "../components/Footer";
 
 const categories = [
   { href: "/Cookies", name: "Cookies", imageUrl: "/baseCookies.jpg" },
-  { href: "/Chocolates", name: "Chocolates", imageUrl: "/baseChocolates.jpg" },
+  { href: "/Chocolates", name: "chocolates", imageUrl: "/baseChocolates.jpg" },
 ];
 
 const HomePage = () => {
   const { fetchFeaturedProducts, products, isLoading } = useProductStore();
-  const location = useLocation();
   const categorySectionRef = useRef(null);
 
   useEffect(() => {
     fetchFeaturedProducts();
   }, [fetchFeaturedProducts]);
-
-  // Move useEffect OUTSIDE JSX
-  useEffect(() => {
-    if (location.state?.scrollToCategories && categorySectionRef.current) {
-      categorySectionRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [location]);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
