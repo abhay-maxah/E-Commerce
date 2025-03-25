@@ -82,7 +82,7 @@ const AllOrder = () => {
                     return (
                       <tr
                         key={order._id}
-                        className="hover:bg-red-100 transition"
+                        className="hover:bg-red-50 transition"
                       >
                         <td className="px-4 py-4 text-gray-700 font-semibold">
                           {index + 1}

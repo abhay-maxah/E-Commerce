@@ -15,10 +15,10 @@ import PurchaseSuccessPage from "./pages/PurchaseSuccessPage";
 import PurchaseCancelPage from "./pages/PurchaseCancelPage";
 import ErrorPage from "./pages/ErrorPage";
 import ProductDetail from "./pages/ProductDetail";
-import UserList from "./components/AnalyticsTab/UserList";
 import AllOrder from "./pages/AllOrder";
 import AddressForm from "./pages/AddressForm";
 import UserProfile from "./pages/UserProfile";
+import ScrollToTop from "./components/ScrollToTop";
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
   const { getCartItems } = useCartStore();
@@ -35,6 +35,7 @@ function App() {
   if (checkingAuth) return <LoadingSpinner />;
   return (
     <>
+      <ScrollToTop />
       <div className="min-h-screen bg-[#fcf7f8] text-[#A31621] relative overflow-hidden">
         <div className="relative z-50 ">
           <NavBar />
