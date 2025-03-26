@@ -5,9 +5,8 @@ import { useUserStore } from "../stores/useUserStore";
 import { useAddressStore } from "../stores/useAddressStore";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { loadStripe } from "@stripe/stripe-js";
-import { ShoppingCart, CreditCard } from "lucide-react";
+import { ShoppingCart, CreditCard, Loader } from "lucide-react";
 import { useCartStore } from "../stores/useCartStore";
-import PeopleAlsoBought from "../components/PeopleAlsoBought";
 import axios from "../lib/axios";
 import toast from "react-hot-toast";
 import AddressSelectionModal from "../components/AddressSelectionModal";
@@ -23,7 +22,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { addToCart, cart, coupon, isCouponApplied } = useCartStore();
   const { addresses, getAllAddresses } = useAddressStore();
-
+  const [isDisabled, setIsDisabled] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
 
@@ -40,7 +39,6 @@ const ProductDetail = () => {
   }, [user]); // This ensures addresses are fetched when user logs in
 
   useEffect(() => {
-    console.log(addresses, "length", addresses.length);
     if (addresses.length === 1) {
       setSelectedAddress(addresses[0]);
     }
@@ -59,6 +57,7 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = async () => {
+    setIsDisabled(true);
     if (!user) {
       toast.error("You need to log in to proceed with checkout.");
       return;
@@ -163,9 +162,19 @@ const ProductDetail = () => {
             </button>
             <button
               className="flex-1 px-6 py-3 border border-[#A31621] text-[#A31621] font-semibold rounded-lg hover:bg-[#A31621] hover:text-white transition duration-300"
+              disabled={isDisabled}
               onClick={handleBuyNow}
             >
-              <CreditCard className="inline-block mr-2" /> Buy Now
+              {isDisabled ? (
+                <>
+                  <Loader className="inline-block mr-2 animate-spin" />{" "}
+                  Buying...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="inline-block mr-2" /> Buy Now
+                </>
+              )}
             </button>
           </div>
         </div>

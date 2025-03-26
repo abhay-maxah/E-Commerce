@@ -8,7 +8,7 @@ import axios from "../lib/axios";
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import AddressSelectionModal from "./AddressSelectionModal";
-
+import { Loader } from "lucide-react";
 const stripePromise = loadStripe(
   "pk_test_51QzEaMEEwnxF6uaXFg88SDeBc2gwYDHPmRvr50njYWLZheM2IhU3jCIC5LMgu0iE3ESsQCZJx4USDXBgr5H0oUUR00eenCOvyw"
 );
@@ -16,6 +16,7 @@ const stripePromise = loadStripe(
 const OrderSummary = () => {
   const { total, subtotal, coupon, isCouponApplied, cart, clearCart } =
     useCartStore();
+  const [isDisabled, setIsDisabled] = useState(false);
   const { addresses, getAllAddresses } = useAddressStore();
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,6 +34,7 @@ const OrderSummary = () => {
   const formattedSavings = savings.toFixed(2);
 
   const handlePayment = async () => {
+    setIsDisabled(true);
     if (!addresses || addresses.length === 0) {
       toast.error("Please add an address in your profile before proceeding.");
       return;
@@ -126,8 +128,16 @@ const OrderSummary = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handlePayment}
+            disabled={isDisabled}
           >
-            Proceed to Checkout
+            {isDisabled ? (
+              <>
+                <Loader className="inline-block mr-2 animate-spin" />{" "}
+                Processing...
+              </>
+            ) : (
+              <>Process to Checkout</>
+            )}
           </motion.button>
 
           <div className="flex items-center justify-center gap-2">

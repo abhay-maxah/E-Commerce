@@ -61,7 +61,7 @@ const ProductsList = () => {
 
   return (
     <motion.div
-      className="bg-white border border-[#A31621] text-[#A31621] shadow-lg rounded-3xl overflow-hidden max-w-5xl mx-auto p-6"
+      className="bg-white border border-[#A31621] text-[#A31621] shadow-lg rounded-3xl overflow-hidden max-w-auto mx-auto p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
