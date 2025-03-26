@@ -13,10 +13,16 @@ const FeaturedProducts = ({ featuredProducts }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 640) setItemsPerPage(1);
-      else if (window.innerWidth < 1024) setItemsPerPage(2);
-      else if (window.innerWidth < 1280) setItemsPerPage(3);
-      else setItemsPerPage(4);
+      try {
+        if (window.innerWidth != null) {
+          if (window.innerWidth < 640) setItemsPerPage(1);
+          else if (window.innerWidth < 1024) setItemsPerPage(2);
+          else if (window.innerWidth < 1280) setItemsPerPage(3);
+          else setItemsPerPage(4);
+        }
+      } catch (error) {
+        console.error("Error handling resize:", error);
+      }
     };
 
     handleResize();
@@ -29,11 +35,13 @@ const FeaturedProducts = ({ featuredProducts }) => {
   };
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => prevIndex + itemsPerPage);
+    setCurrentIndex((prevIndex) =>
+      Math.min(prevIndex + 1, featuredProducts.length - itemsPerPage)
+    );
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => prevIndex - itemsPerPage);
+    setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
   };
 
   const isStartDisabled = currentIndex === 0;

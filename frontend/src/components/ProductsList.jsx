@@ -68,12 +68,12 @@ const ProductsList = () => {
     >
       <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 ">
         <h2 className="text-lg font-semibold text-[#A31621]">Product List</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
           <label className="text-[#A31621] font-medium text-sm sm:text-base">
             Filter by:
           </label>
           <select
-            className="border border-[#A31621] p-2 rounded-lg text-[#A31621] bg-transparent focus:outline-none cursor-pointer transition"
+            className="border border-[#A31621] p-2 rounded-lg text-[#A31621] bg-transparent focus:outline-none cursor-pointer transition w-full sm:w-auto"
             value={sortOption}
             onChange={handleSortChange}
           >
@@ -82,12 +82,13 @@ const ProductsList = () => {
             <option value="price_high_low">Price: High to Low</option>
             <option value="price_low_high">Price: Low to High</option>
           </select>
-
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
           <label className="text-[#A31621] font-medium text-sm sm:text-base">
             Category:
           </label>
           <select
-            className="border border-[#A31621] p-2 rounded-lg text-[#A31621] bg-transparent focus:outline-none cursor-pointer transition"
+            className="border border-[#A31621] p-2 rounded-lg text-[#A31621] bg-transparent focus:outline-none cursor-pointer transition w-full sm:w-auto"
             value={categoryFilter}
             onChange={handleCategoryChange}
           >

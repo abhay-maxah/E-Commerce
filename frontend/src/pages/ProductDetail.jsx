@@ -5,9 +5,9 @@ import { useUserStore } from "../stores/useUserStore";
 import { useAddressStore } from "../stores/useAddressStore";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { loadStripe } from "@stripe/stripe-js";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, CreditCard } from "lucide-react";
 import { useCartStore } from "../stores/useCartStore";
-
+import PeopleAlsoBought from "../components/PeopleAlsoBought";
 import axios from "../lib/axios";
 import toast from "react-hot-toast";
 import AddressSelectionModal from "../components/AddressSelectionModal";
@@ -104,82 +104,84 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto mt-20 p-4 sm:p-6 bg-white shadow-lg rounded-lg flex flex-col md:flex-row gap-6 md:gap-8 relative z-10 pb-20">
-      <button
-        className="absolute top-4 left-4 px-5 py-2 border bg-[#A31621] text-white font-semibold rounded-xl transition duration-300 shadow-lg z-20"
-        onClick={() => navigate(-1)}
-      >
-        &larr;
-      </button>
-      <div className="w-full md:w-2/5 mt-12 md:mt-0 relative">
-        <img
-          src={product?.image}
-          alt={product?.name}
-          className="w-full h-80 sm:h-96 object-cover rounded-lg"
-        />
-      </div>
-      <div className="w-full md:w-3/5">
-        <h2 className="text-2xl lg:text-4xl xl:text-4xl md:text-3xl sm:text-2xl font-extrabold text-[#A31621] mb-4 leading-tight">
-          {product?.name}
-        </h2>
-        <p className="text-3xl font-bold text-gray-800 mt-1">
-          Rs.{product?.price}
-        </p>
-        <p className="mt-4 text-lg text-gray-600 leading-relaxed">
-          {product?.description}
-        </p>
-        <div className="mt-6 border-t pt-4">
-          <h3 className="text-xl font-semibold">Shipping Information</h3>
-          <ul className="list-disc pl-6 text-gray-600">
-            <li>
-              We dispatch all products within 24-48 hours of placing the order.
-            </li>
-            <li>
-              Post dispatch, delivery may take 1-3 days for metro and 3-6 days
-              for non-metro locations.
-            </li>
-            <li>We ensure the best courier services for your orders.</li>
-            <li>Proper packaging prevents in-transit damages.</li>
-          </ul>
+    <>
+      <div className="max-w-6xl mx-auto mt-20 p-4 sm:p-6 bg-transparent shadow-lg rounded-lg flex flex-col md:flex-row gap-6 md:gap-8 relative z-10 pb-20">
+        <button
+          className="absolute top-4 left-4 px-5 py-2 border bg-[#A31621] text-white font-semibold rounded-xl transition duration-300 shadow-lg z-20"
+          onClick={() => navigate(-1)}
+        >
+          &larr;
+        </button>
+        <div className="w-full md:w-2/5 mt-12 md:mt-0 relative">
+          <img
+            src={product?.image}
+            alt={product?.name}
+            className="w-full h-80 sm:h-96 object-cover rounded-lg"
+          />
         </div>
-        <div className="mt-6 border-t pt-4">
-          <h3 className="text-xl font-semibold">Manufacturing Details</h3>
-          <p className="text-gray-600">Manufactured and Marketed By:</p>
-          <p className="text-gray-600 font-semibold">
-            CookiesMan Private Limited
+        <div className="w-full md:w-3/5">
+          <h2 className="text-2xl lg:text-4xl xl:text-4xl md:text-3xl sm:text-2xl font-extrabold text-[#A31621] mb-4 leading-tight">
+            {product?.name}
+          </h2>
+          <p className="text-3xl font-bold text-gray-800 mt-1">
+            Rs.{product?.price}
           </p>
-          <p className="text-gray-600">123, Sweet Treats Avenue</p>
-          <p className="text-gray-600">Baking City - 400001, Dessert Land</p>
-          <p className="text-gray-600">Country of Origin: Cookie Kingdom</p>
+          <p className="mt-4 text-lg text-gray-600 leading-relaxed">
+            {product?.description}
+          </p>
+          <div className="mt-6 border-t pt-4">
+            <h3 className="text-xl font-semibold">Shipping Information</h3>
+            <ul className="list-disc pl-6 text-gray-600">
+              <li>
+                We dispatch all products within 24-48 hours of placing the
+                order.
+              </li>
+              <li>
+                Post dispatch, delivery may take 1-3 days for metro and 3-6 days
+                for non-metro locations.
+              </li>
+              <li>We ensure the best courier services for your orders.</li>
+              <li>Proper packaging prevents in-transit damages.</li>
+            </ul>
+          </div>
+          <div className="mt-6 border-t pt-4">
+            <h3 className="text-xl font-semibold">Manufacturing Details</h3>
+            <p className="text-gray-600">Manufactured and Marketed By:</p>
+            <p className="text-gray-600 font-semibold">
+              CookiesMan Private Limited
+            </p>
+            <p className="text-gray-600">123, Sweet Treats Avenue</p>
+            <p className="text-gray-600">Baking City - 400001, Dessert Land</p>
+            <p className="text-gray-600">Country of Origin: Cookie Kingdom</p>
+          </div>
+          <div className="mt-6 flex flex-col sm:flex-row gap-4">
+            <button
+              className="flex-1 px-6 py-3 border border-[#A31621] text-[#A31621] font-semibold rounded-lg hover:bg-[#A31621] hover:text-white transition duration-300"
+              onClick={handleAddToCart}
+            >
+              <ShoppingCart className="inline-block mr-2" /> Add to Cart
+            </button>
+            <button
+              className="flex-1 px-6 py-3 border border-[#A31621] text-[#A31621] font-semibold rounded-lg hover:bg-[#A31621] hover:text-white transition duration-300"
+              onClick={handleBuyNow}
+            >
+              <CreditCard className="inline-block mr-2" /> Buy Now
+            </button>
+          </div>
         </div>
-        <div className="mt-6 flex flex-col sm:flex-row gap-4">
-          <button
-            className="flex-1 px-6 py-3 border border-[#A31621] text-[#A31621] font-semibold rounded-lg hover:bg-[#A31621] hover:text-white transition duration-300"
-            onClick={handleAddToCart}
-          >
-            <ShoppingCart className="inline-block mr-2" /> Add to Cart
-          </button>
-          <button
-            className="flex-1 px-6 py-3 bg-[#A31621] text-white font-semibold rounded-lg hover:opacity-80 transition duration-300"
-            onClick={handleBuyNow}
-          >
-            Buy Now
-          </button>
-        </div>
+        {isModalOpen && (
+          <AddressSelectionModal
+            addresses={addresses}
+            onClose={() => setIsModalOpen(false)}
+            onSelect={(address) => {
+              setSelectedAddress(address);
+              setIsModalOpen(false);
+              handleBuyNow();
+            }}
+          />
+        )}
       </div>
-
-      {isModalOpen && (
-        <AddressSelectionModal
-          addresses={addresses}
-          onClose={() => setIsModalOpen(false)}
-          onSelect={(address) => {
-            setSelectedAddress(address);
-            setIsModalOpen(false);
-            handleBuyNow();
-          }}
-        />
-      )}
-    </div>
+    </>
   );
 };
 

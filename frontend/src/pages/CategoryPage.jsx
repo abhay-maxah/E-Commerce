@@ -17,12 +17,17 @@ const CategoryPage = () => {
   );
   const [sortBy, setSortBy] = useState(searchParams.get("sortBy") || "newest");
   const [limit, setLimit] = useState(Number(searchParams.get("limit")) || 12);
-
   useEffect(() => {
     if (category) {
       fetchProductsByCategory(category, sortBy, currentPage, limit); // Fetch with sorting & pagination
     }
   }, [category, sortBy, currentPage, limit]);
+
+  // Reset page to 1 when category changes
+  useEffect(() => {
+    setCurrentPage(1);
+    setSearchParams({ sortBy, page: 1, limit });
+  }, [category]);
 
   // Handle sorting change
   const handleSortChange = (event) => {
