@@ -165,7 +165,7 @@ const ProductDetail = () => {
               disabled={isDisabled}
               onClick={handleBuyNow}
             >
-              {isDisabled ? (
+              {isDisabled && user ? (
                 <>
                   <Loader className="inline-block mr-2 animate-spin" />{" "}
                   Buying...

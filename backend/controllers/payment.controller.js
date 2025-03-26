@@ -4,7 +4,7 @@ import { stripe } from "../lib/stripe.js";
 
 export const createCheckoutSession = async (req, res) => {
   try {
-    const { products, couponCode, address } = req.body; 
+    const { products, couponCode, address } = req.body;
 
     if (!Array.isArray(products) || products.length === 0) {
       return res.status(400).json({ error: "Invalid or empty products array" });
@@ -75,14 +75,15 @@ export const createCheckoutSession = async (req, res) => {
     });
 
     if (totalAmount >= 20000) {
-      console.log("Coupon is Created");
       await createNewCoupon(req.user._id);
     }
 
     res.status(200).json({ id: session.id, totalAmount: totalAmount / 100 });
   } catch (error) {
     console.error("Error processing checkout:", error);
-    res.status(500).json({ message: "Error processing checkout", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error processing checkout", error: error.message });
   }
 };
 
@@ -95,11 +96,13 @@ export const checkoutSuccess = async (req, res) => {
     }
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
- // **Prevent duplicate order creation**
- const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
- if (existingOrder) {
-     return res.status(400).json({ message: "Order already created for this session." });
- }
+    // **Prevent duplicate order creation**
+    const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
+    if (existingOrder) {
+      return res
+        .status(400)
+        .json({ message: "Order already created for this session." });
+    }
     if (session.payment_status === "paid") {
       if (session.metadata.couponCode) {
         await Coupon.findOneAndUpdate(
@@ -131,7 +134,8 @@ export const checkoutSuccess = async (req, res) => {
 
       res.status(200).json({
         success: true,
-        message: "Payment successful, order created, and coupon deactivated if used.",
+        message:
+          "Payment successful, order created, and coupon deactivated if used.",
         orderId: newOrder._id,
       });
     }
