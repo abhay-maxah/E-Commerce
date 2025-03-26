@@ -15,7 +15,7 @@ const PeopleAlsoBought = () => {
         setRecommendations(res.data);
       } catch (error) {
         toast.error(
-          error.response?.data?.message ||
+          error.response.data.message ||
             "An error occurred while fetching recommendations"
         );
       } finally {
@@ -29,17 +29,14 @@ const PeopleAlsoBought = () => {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="flex justify-center mt-8">
-      <div className="max-w-5xl w-full">
-        <h3 className="text-2xl font-semibold ">People also bought</h3>
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {recommendations.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
-        </div>
+    <div className=" mt-8">
+      <h3 className=" text-2xl font-semibold ">People also bought</h3>
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg: grid-col-3">
+        {recommendations.map((product) => (
+          <ProductCard key={product._id} product={product} />
+        ))}
       </div>
     </div>
   );
 };
-
 export default PeopleAlsoBought;

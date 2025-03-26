@@ -68,4 +68,14 @@ export const useAddressStore = create((set) => ({
       toast.error(error.response?.data?.message || "An error occurred");
     }
   },
+  togelVisiblity: async (id) => {
+    set({ loading: true });
+    try {
+      const res = await axios.patch(`/address/visible/${id}`);
+      set({ addresses: res.data, loading: false });
+    } catch (error) {
+      set({ loading: false });
+      toast.error(error.response?.data?.message || "An error occurred");
+    }
+  },
 }));

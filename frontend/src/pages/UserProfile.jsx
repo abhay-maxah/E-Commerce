@@ -8,7 +8,7 @@ import AddressForm from "./AddressForm";
 
 const UserProfile = () => {
   const { user, checkAuth } = useUserStore();
-  const { addresses, getAllAddresses, deleteAddress, loading } =
+  const { addresses, getAllAddresses, togelVisiblity, loading } =
     useAddressStore();
   const navigate = useNavigate();
 
@@ -119,7 +119,7 @@ const UserProfile = () => {
                     <button
                       className="text-red-600 hover:text-red-800"
                       onClick={async () => {
-                        await deleteAddress(address._id);
+                        await togelVisiblity(address._id);
                         getAllAddresses();
                       }}
                     >
