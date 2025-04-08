@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
+
 import {
   UserPlus,
   Mail,
@@ -19,18 +21,38 @@ const SignUpPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    code: ""
   });
-
+  const [sentCode, setSentCode] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false); // For disabling button
+  const [codeVerified, setCodeVerified] = useState(false); // Optional
 
-  const { signup, loading } = useUserStore();
+  const { signup, loading, sendCode, verifyCode } = useUserStore();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    signup(formData);
+    try {
+      await verifyCode(formData.email, formData.code); // Validate from backend
+      setCodeVerified(true);
+      signup(formData); // Proceed to signup
+    } catch (err) {
+      console.error("Verification failed", err);
+    }
   };
 
+  const handleSendCode = async (email) => {
+    if (!email) return toast.error("Enter your email address");
+    try {
+      setSendingCode(true); // Disable button
+      await sendCode(email);
+    } catch (err) {
+      console.error("Send code failed:", err);
+    } finally {
+      setSendingCode(false); // Enable back
+    }
+  };
   return (
     <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <motion.div
@@ -164,10 +186,40 @@ const SignUpPage = () => {
                   )}
                 </button>
               </div>
+              {/* Code Field with Send Button */}
+              <div>
+                <label htmlFor="code" className="block mt-5 text-sm font-medium">
+                  Verification Code
+                </label>
+                <div className="mt-1 relative flex rounded-md shadow-sm">
+                  <div className="relative flex-grow">
+                    <input
+                      id="code"
+                      type="text"
+                      required
+                      value={formData.code}
+                      onChange={(e) =>
+                        setFormData({ ...formData, code: e.target.value })
+                      }
+                      className="block w-full px-3 py-2 pl-3 pr-3 rounded-l-md shadow-sm bg-transparent placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                      placeholder="Enter code"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleSendCode(formData.email)}
+                    className="px-4 py-2 bg-[#A31621] text-white rounded-r-md hover:bg-[#8f101a] text-sm disabled:opacity-50"
+                    disabled={sendingCode}
+                  >
+                    {sendingCode ? "Sending..." : "Send Code"}
+                  </button>
+
+                </div>
+              </div>
             </div>
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium bg-transparent border border-[#A31621] hover:bg-[#A31621] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out disabled:opacity-50"
+              className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium bg-transparent border border-[#A31621] hover:bg-[#A31621] hover:text-white focus:outline-none"
               disabled={loading}
             >
               {loading ? (

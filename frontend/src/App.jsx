@@ -1,4 +1,7 @@
 import { Route, Routes, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 import HomePage from "./pages/HomePage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
@@ -6,7 +9,6 @@ import NavBar from "./components/NavBar";
 import { Toaster } from "react-hot-toast";
 import { useUserStore } from "./stores/useUserStore";
 import { useCartStore } from "./stores/useCartStore";
-import { useEffect } from "react";
 import LoadingSpinner from "./components/LoadingSpinner";
 import AdminPage from "./pages/AdminPage";
 import CategoryPage from "./pages/CategoryPage";
@@ -19,25 +21,35 @@ import AllOrder from "./pages/AllOrder";
 import AddressForm from "./pages/AddressForm";
 import UserProfile from "./pages/UserProfile";
 import ScrollToTop from "./components/ScrollToTop";
+
+// 🔐 Wrapper for Google login
+const GoogleAuthWrapper = () => {
+  return (
+    <GoogleOAuthProvider clientId="809832986226-q5uuk1ai9u0onglu7jm43s8akhkt3761.apps.googleusercontent.com">
+      <LoginPage />
+    </GoogleOAuthProvider>
+  );
+};
+
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
   const { getCartItems } = useCartStore();
+
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
   useEffect(() => {
-    if (!user) return;
-
-    getCartItems();
-  }, [getCartItems, user]);
+    if (user) getCartItems();
+  }, [user, getCartItems]);
 
   if (checkingAuth) return <LoadingSpinner />;
+
   return (
     <>
       <ScrollToTop />
       <div className="min-h-screen bg-[#fcf7f8] text-[#A31621] relative overflow-hidden">
-        <div className="relative z-50 ">
+        <div className="relative z-50">
           <NavBar />
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -47,7 +59,7 @@ function App() {
             />
             <Route
               path="/login"
-              element={!user ? <LoginPage /> : <Navigate to="/" />}
+              element={!user ? <GoogleAuthWrapper /> : <Navigate to="/" />}
             />
             <Route
               path="/secret-dashboard"
@@ -67,15 +79,12 @@ function App() {
             />
             <Route
               path="/purchase-success"
-              element={
-                user ? <PurchaseSuccessPage /> : <Navigate to="/login" />
-              }
+              element={user ? <PurchaseSuccessPage /> : <Navigate to="/login" />}
             />
             <Route
               path="/purchase-cancel"
               element={user ? <PurchaseCancelPage /> : <Navigate to="/login" />}
             />
-
             <Route path="/error" element={<ErrorPage />} />
             <Route
               path="/order-list"
@@ -89,14 +98,10 @@ function App() {
               path="/my-profile"
               element={user ? <UserProfile /> : <Navigate to="/login" />}
             />
-
             <Route
               path="*"
               element={
-                <Navigate
-                  to="/error"
-                  state={{ error: "404 - Page Not Found" }}
-                />
+                <Navigate to="/error" state={{ error: "404 - Page Not Found" }} />
               }
             />
           </Routes>

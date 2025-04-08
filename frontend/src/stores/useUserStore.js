@@ -20,6 +20,16 @@ export const useUserStore = create((set, get) => ({
       toast.error(error.response.data.message || "An error occurred");
     }
   },
+  googleAuth: async (code) => {
+    try {
+      const res = await axios.get(`/auth/login/google?code=${code}`);
+      set({ user: res.data });
+      toast.success("Logged in with Google successfully");
+    } catch (error) {
+      toast.error("Google login failed");
+      console.error("Google Login Error:", error);
+    }
+  },
   login: async (email, password) => {
     set({ loading: true });
     try {
@@ -28,6 +38,26 @@ export const useUserStore = create((set, get) => ({
     } catch (error) {
       set({ loading: false });
       toast.error(error.response.data.message || "An error occurred");
+    }
+  },
+  sendCode: async (email) => {
+    try {
+      const res = await axios.post("/auth/send-code", { email });
+      toast.success(res.data.message || "Code sent successfully");
+      return res.data.code; // Temporarily return for client-side check
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to send code");
+      throw error;
+    }
+  },
+
+  verifyCode: async (email, enteredCode) => {
+    try {
+      const res = await axios.post("/auth/verify-code", { email, code: enteredCode });
+      toast.success(res.data.message);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Invalid verification code");
+      throw error;
     }
   },
 

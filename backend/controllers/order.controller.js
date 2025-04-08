@@ -14,6 +14,12 @@ export const getAllOrder = async (req, res) => {
   }
 };
 
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export const generateInvoice = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -32,11 +38,18 @@ export const generateInvoice = async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     doc.pipe(res);
 
+    // Logo + Title
+    const logoPath = path.join(__dirname, "../public/logo.png");
+    doc.image(logoPath, 190, 42, { width: 30 });
+
     doc
       .fontSize(26)
       .fillColor("#A31621")
-      .text("CookiesMan", { align: "center", underline: true });
-    doc.moveDown(0.5);
+      .text("CookiesMan", 50, 50, {
+        align: "center",
+      });
+
+    doc.moveDown(1);
     doc
       .fontSize(12)
       .fillColor("black")
@@ -47,6 +60,7 @@ export const generateInvoice = async (req, res) => {
     });
     doc.moveDown();
 
+    // INVOICE INFO
     const randomSuffix = Math.floor(100000 + Math.random() * 900000);
     const invoiceNumber = `INV-67DFB1${randomSuffix}`;
     const invoiceDate = new Date().toLocaleDateString("en-IN");
@@ -56,84 +70,85 @@ export const generateInvoice = async (req, res) => {
     doc.text(`Payment Method: Card Payment`);
     doc.moveDown();
 
-    doc
-      .fontSize(16)
-      .fillColor("#A31621")
-      .text("Billing To", { underline: true });
+    // BILLING TO
+    doc.fontSize(16).fillColor("#A31621").text("Billing To", { underline: true });
     doc.moveDown(0.5);
     doc
       .fontSize(12)
       .fillColor("black")
-      .text(`Name: ${order.user?.name || "N/A"}`);
-    doc.text(
-      `Address: ${order.address?.houseName || "N/A"}, ${
-        order.address?.streetAddress || "N/A"
-      }`
-    );
-    doc.text(
-      `${order.address?.city || "N/A"}, ${order.address?.state || "N/A"} - ${
-        order.address?.zipCode || "N/A"
-      }`
-    );
-    doc.text("India");
-    doc.text(`Phone: ${order.address?.phoneNumber || "N/A"}`);
+      .text(`Name: ${order.user?.name || "N/A"}`)
+      .text(`Address: ${order.address?.houseName || "N/A"}, ${order.address?.streetAddress || "N/A"}`)
+      .text(`${order.address?.city || "N/A"}, ${order.address?.state || "N/A"} - ${order.address?.zipCode || "N/A"}`)
+      .text("India")
+      .text(`Phone: ${order.address?.phoneNumber || "N/A"}`);
     doc.moveDown();
 
-    doc
-      .fontSize(16)
-      .fillColor("#A31621")
-      .text("Order Summary", { underline: true });
-    doc.moveDown(0.5);
+    // ORDER SUMMARY TABLE
+    doc.fontSize(16).fillColor("#A31621").text("Order Summary", { underline: true });
 
     let calculatedTotal = 0;
-    if (order.products.length > 0) {
-      order.products.forEach((product, index) => {
-        const productName = product.product?.name || "Unknown Product";
-        const productPrice = product.product?.price || 0;
-        const productTotal = product.quantity * productPrice;
-        calculatedTotal += productTotal;
+    const startX = 50;
+    const endX = 550;
+    const itemHeight = 20;
+    let tableTop = doc.y + 5;
 
-        doc.fontSize(12).fillColor("black");
-        doc.text(`${index + 1}. ${productName}`, { bold: true });
-        doc.text(`Quantity: ${product.quantity}`);
-        doc.text(`Price: Rs.${productPrice.toFixed(2)}`);
-        doc.text(`Subtotal: Rs.${productTotal.toFixed(2)}`);
-        doc.moveDown();
-      });
-    } else {
+    // Header Row
+    doc
+      .fontSize(12)
+      .fillColor("black")
+      .text("Sr No", startX + 5, tableTop)
+      .text("Product Name", startX + 50, tableTop)
+      .text("Price (Rs)", startX + 210, tableTop)
+      .text("Qty", startX + 290, tableTop)
+      .text("Total (Rs)", startX + 350, tableTop);
+
+    tableTop += 5;
+    doc.rect(startX, tableTop - 10, endX - startX, itemHeight).stroke("#A31621");
+
+    let currentY = tableTop + itemHeight;
+
+    // Table Rows
+    order.products.forEach((product, index) => {
+      const productName = product.product?.name || "Unknown Product";
+      const productPrice = product.product?.price || 0;
+      const quantity = product.quantity || 0;
+      const productTotal = quantity * productPrice;
+      calculatedTotal += productTotal;
+
       doc
         .fontSize(12)
-        .fillColor("black")
-        .text("No products available in this order.");
-      doc.moveDown();
-    }
+        .text(`${index + 1}`, startX + 5, currentY)
+        .text(productName, startX + 50, currentY)
+        .text(productPrice.toFixed(2), startX + 210, currentY)
+        .text(quantity, startX + 290, currentY)
+        .text(productTotal.toFixed(2), startX + 350, currentY);
+
+      doc.rect(startX, currentY - 5, endX - startX, itemHeight).stroke("#A31621");
+      currentY += itemHeight;
+    });
+
+    const tableBottomY = currentY;
+
+    // BILLING SUMMARY
+    doc.moveDown(1.5);
+    doc.fontSize(16).fillColor("#A31621").text("Billing Summary", startX, tableBottomY + 10, { underline: true });
 
     const totalAmount = order.totalAmount || calculatedTotal;
     const discount = calculatedTotal - totalAmount;
     const payableAmount = totalAmount;
 
     doc
-      .fontSize(16)
-      .fillColor("#A31621")
-      .text("Billing Summary", { underline: true });
-    doc.moveDown(0.5);
-
-    const fallbackRupeeText = "Rs.";
-
-    doc
       .fontSize(14)
       .fillColor("black")
-      .text(`Total Amount: ${fallbackRupeeText} ${calculatedTotal.toFixed(2)}`);
-    doc.text(`Discount: ${fallbackRupeeText} ${discount.toFixed(2)}`);
+      .text(`Total Amount: Rs. ${calculatedTotal.toFixed(2)}`, startX, tableBottomY + 35);
+    doc.text(`Discount: Rs. ${discount.toFixed(2)}`, startX, doc.y);
     doc
       .fontSize(16)
       .fillColor("#A31621")
-      .text(
-        `Payable Amount: ${fallbackRupeeText} ${payableAmount.toFixed(2)}`,
-        { bold: true }
-      );
-    doc.moveDown(1);
+      .text(`Payable Amount: Rs. ${payableAmount.toFixed(2)}`, startX, doc.y);
 
+    // FOOTER
+    doc.moveDown(1.5);
     doc
       .fontSize(14)
       .fillColor("#A31621")
@@ -145,14 +160,14 @@ export const generateInvoice = async (req, res) => {
     doc.end();
   } catch (error) {
     console.error("Error generating invoice:", error);
-    if (!res.headersSent) {
-      res.setHeader("Content-Type", "application/json");
+    if (!res.headersSent && !res.writableEnded) {
       res.status(500).json({ message: "Server error", error: error.message });
     } else {
       res.destroy(error);
     }
   }
 };
+
 
 export const getAllOrderForAdmin = async (req, res) => {
   try {

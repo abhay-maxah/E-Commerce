@@ -5,7 +5,7 @@ import { Trash2, Edit, Plus, X } from "lucide-react";
 import { useUserStore } from "../stores/useUserStore";
 import { useAddressStore } from "../stores/useAddressStore";
 import AddressForm from "./AddressForm";
-
+import LoadingSpinner from "../components/LoadingSpinner"
 const UserProfile = () => {
   const { user, checkAuth } = useUserStore();
   const { addresses, getAllAddresses, togelVisiblity, loading } =
@@ -14,13 +14,18 @@ const UserProfile = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [isUserLoading, setIsUserLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      checkAuth();
-    }
-    getAllAddresses();
-  }, [user, checkAuth, getAllAddresses]);
+    const fetchData = async () => {
+      if (!user) {
+        await checkAuth();
+      }
+      await getAllAddresses();
+      setIsUserLoading(false);
+    };
+    fetchData();
+  }, []);
 
   const getInitials = (name) => {
     if (!name) return "";
@@ -37,6 +42,14 @@ const UserProfile = () => {
     await getAllAddresses();
   };
 
+  if (isUserLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   return (
     <motion.div
       className="flex justify-center items-center min-h-screen px-4 mt-10"
@@ -45,42 +58,46 @@ const UserProfile = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="w-full max-w-3xl p-6 bg-white shadow-md rounded-md border">
-        {/* Centered Profile Title */}
         <h1 className="text-4xl font-bold text-[#A31621] text-center mb-6">
           My Profile
         </h1>
 
-        {!user ? (
-          <div className="text-center text-gray-500">Loading...</div>
-        ) : (
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            {/* Profile Image */}
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          {/* Profile Image or Initials */}
+          {user?.image ? (
+            <img
+              src={user.image}
+              alt={`${user.name}'s profile picture`}
+              className="w-32 h-32 rounded-full object-cover border-4 border-[#A31621]"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
             <div className="w-32 h-32 flex items-center justify-center bg-[#A31621] text-white text-3xl font-bold rounded-full">
               {getInitials(user?.name)}
             </div>
+          )}
 
-            {/* User Details */}
-            <div className="flex-1">
-              <div className="text-gray-700 space-y-3">
+          {/* User Details */}
+          <div className="flex-1">
+            <div className="text-gray-700 space-y-3">
+              <div>
+                <h2 className="text-lg font-semibold">Name: {user?.name}</h2>
+              </div>
+              <div>
+                <p className="text-gray-600">Role: {user?.role}</p>
+              </div>
+              <div className="border-t pt-4 mt-4 space-y-2">
                 <div>
-                  <h2 className="text-lg font-semibold">Name: {user?.name}</h2>
+                  <span className="font-semibold">Email:</span> {user?.email}
                 </div>
                 <div>
-                  <p className="text-gray-600">Role: {user?.role}</p>
-                </div>
-                <div className="border-t pt-4 mt-4 space-y-2">
-                  <div>
-                    <span className="font-semibold">Email:</span> {user?.email}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Phone:</span>{" "}
-                    {addresses[0]?.phoneNumber || "N/A"}
-                  </div>
+                  <span className="font-semibold">Phone:</span>{" "}
+                  {addresses[0]?.phoneNumber || "N/A"}
                 </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Address Section */}
         <div className="mt-8">

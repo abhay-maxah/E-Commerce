@@ -1,6 +1,9 @@
 import { redis } from "../lib/redis.js";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import oauth2client from "../lib/googleConfig.js"
+import axios from "axios"
+import resend from "../lib/resend.js"
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: "15m",
@@ -152,7 +155,32 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+export const loginGoogle = async (req, res) => {
+  try {
+    const { code } = req.query
+    const googleRes = await oauth2client.getToken(code)
+    oauth2client.setCredentials(googleRes.tokens)
+    const userRes = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`)
+    const { email, name, picture } = userRes.data;
+    const user = await User.findOne({ email: userRes.data.email })
+    if (!user) {
+      user = await User.create({ name, email, image: picture })
 
+    }
+    const { accessToken, refreshToken } = generateTokens(user._id);
+    await storeRefreshToken(user._id, refreshToken);
+    setCookies(res, accessToken, refreshToken);
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    })
+  } catch (error) {
+    res.status(500).json({ message: "Server Error while login with Google", error: error.message })
+  }
+}
 export const deleteUserById = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -165,3 +193,69 @@ export const deleteUserById = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error });
   }
 };
+
+const verificationCodes = {};
+
+export const sendAuthCode = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const code = Math.floor(100000 + Math.random() * 900000);
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    verificationCodes[email] = code;
+    await sendEmail(email, code);
+    res.status(200).json({ message: "Code sent successfully", code });
+  } catch (error) {
+    console.error("Error sending email:", error);
+    res.status(500).json({ message: "Server Error while sending Mail", error });
+  }
+}
+export const verifyAuthCode = async (req, res) => {
+  const { email, code } = req.body;
+  if (verificationCodes[email] && verificationCodes[email] === parseInt(code)) {
+    delete verificationCodes[email]; // Optionally clear after success
+    return res.status(200).json({ message: "Code verified successfully" });
+  }
+  res.status(400).json({ message: "Invalid verification code" });
+};
+const sendEmail = async (email, code) => {
+  await resend.emails.send({
+    from: "onboarding@resend.dev", // or your verified domain
+    to: [email],
+    subject: "🔐 Your Authentication Code from CookiesMan",
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #fef9f6;">
+        <div style="max-width: 500px; margin: auto; background-color: #fff8f2; border: 2px solid #e0c4aa; border-radius: 12px; padding: 30px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+
+          <!-- Cookie-themed Logo -->
+          <img src="https://cdn-icons-png.flaticon.com/512/1047/1047711.png" alt="CookiesMan Logo" style="height: 70px; margin-bottom: 20px;" />
+
+          <h1 style="color: #a31621; margin-bottom: 0;">Welcome to CookiesMan 🍪</h1>
+          <p style="font-size: 16px; color: #333;">Your sweet & secure login code is here!</p>
+          
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+
+          <p style="font-size: 18px; color: #555;">Enter the following code:</p>
+          <div style="font-size: 32px; font-weight: bold; color: #ffffff; background-color: #a31621; padding: 15px 0; border-radius: 8px; margin: 10px auto; width: 180px;">
+            ${code}
+          </div>
+
+          <p style="font-size: 14px; color: #777; margin-top: 20px;">
+            ⏰ <strong>This code is valid for only 5 minutes.</strong><br />
+            Please do not share it with anyone.
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;" />
+          <p style="font-size: 13px; color: #aaa;">
+            Didn't request this email? No worries, just ignore it.
+          </p>
+          <p style="font-size: 12px; color: #aaa;">— The CookiesMan Team 🍪</p>
+        </div>
+      </div>
+    `,
+  });
+};
+

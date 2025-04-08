@@ -36,13 +36,13 @@ const ProductDetail = () => {
     if (user) {
       getAllAddresses();
     }
-  }, [user]); // This ensures addresses are fetched when user logs in
+  }, [user]);
 
   useEffect(() => {
     if (addresses.length === 1) {
       setSelectedAddress(addresses[0]);
     }
-  }, [addresses, setSelectedAddress]);
+  }, [addresses]);
 
   if ((!product && loading) || checkingAuth) return <LoadingSpinner />;
   if (error)
@@ -58,12 +58,16 @@ const ProductDetail = () => {
 
   const handleBuyNow = async () => {
     setIsDisabled(true);
+
     if (!user) {
       toast.error("You need to log in to proceed with checkout.");
+      setIsDisabled(false);
       return;
     }
+
     if (!selectedAddress && addresses.length === 1) {
-      setSelectedAddress(addresses[0]); // Set the address explicitly
+      setSelectedAddress(addresses[0]);
+      setIsDisabled(false);
       return;
     }
 
@@ -74,6 +78,7 @@ const ProductDetail = () => {
 
     if (!selectedAddress) {
       toast.error("Please add an address before checkout.");
+      setIsDisabled(false);
       return;
     }
 
@@ -95,11 +100,18 @@ const ProductDetail = () => {
       if (result.error) {
         console.error("Error:", result.error);
         toast.error("Payment failed. Please try again.");
+        setIsDisabled(false);
       }
     } catch (error) {
       console.error("Error processing checkout:", error);
       toast.error("An error occurred while processing your payment.");
+      setIsDisabled(false);
     }
+  };
+
+  const handleModalCancel = () => {
+    setIsModalOpen(false);
+    setIsDisabled(false); // Reset to allow "Buy Now" again
   };
 
   return (
@@ -128,6 +140,7 @@ const ProductDetail = () => {
           <p className="mt-4 text-lg text-gray-600 leading-relaxed">
             {product?.description}
           </p>
+
           <div className="mt-6 border-t pt-4">
             <h3 className="text-xl font-semibold">Shipping Information</h3>
             <ul className="list-disc pl-6 text-gray-600">
@@ -143,6 +156,7 @@ const ProductDetail = () => {
               <li>Proper packaging prevents in-transit damages.</li>
             </ul>
           </div>
+
           <div className="mt-6 border-t pt-4">
             <h3 className="text-xl font-semibold">Manufacturing Details</h3>
             <p className="text-gray-600">Manufactured and Marketed By:</p>
@@ -153,6 +167,7 @@ const ProductDetail = () => {
             <p className="text-gray-600">Baking City - 400001, Dessert Land</p>
             <p className="text-gray-600">Country of Origin: Cookie Kingdom</p>
           </div>
+
           <div className="mt-6 flex flex-col sm:flex-row gap-4">
             <button
               className="flex-1 px-6 py-3 border border-[#A31621] text-[#A31621] font-semibold rounded-lg hover:bg-[#A31621] hover:text-white transition duration-300"
@@ -167,8 +182,7 @@ const ProductDetail = () => {
             >
               {isDisabled && user ? (
                 <>
-                  <Loader className="inline-block mr-2 animate-spin" />{" "}
-                  Buying...
+                  <Loader className="inline-block mr-2 animate-spin" /> Buying...
                 </>
               ) : (
                 <>
@@ -178,14 +192,15 @@ const ProductDetail = () => {
             </button>
           </div>
         </div>
+
         {isModalOpen && (
           <AddressSelectionModal
             addresses={addresses}
-            onClose={() => setIsModalOpen(false)}
+            onClose={handleModalCancel}
             onSelect={(address) => {
               setSelectedAddress(address);
               setIsModalOpen(false);
-              handleBuyNow();
+              handleBuyNow(); // Retry checkout after address selection
             }}
           />
         )}

@@ -2,13 +2,13 @@ import { motion } from "framer-motion";
 import { useCartStore } from "../stores/useCartStore";
 import { useAddressStore } from "../stores/useAddressStore";
 import { Link } from "react-router-dom";
-import { MoveRight } from "lucide-react";
+import { MoveRight, Loader } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import axios from "../lib/axios";
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import AddressSelectionModal from "./AddressSelectionModal";
-import { Loader } from "lucide-react";
+
 const stripePromise = loadStripe(
   "pk_test_51QzEaMEEwnxF6uaXFg88SDeBc2gwYDHPmRvr50njYWLZheM2IhU3jCIC5LMgu0iE3ESsQCZJx4USDXBgr5H0oUUR00eenCOvyw"
 );
@@ -21,7 +21,6 @@ const OrderSummary = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch addresses on first load
   useEffect(() => {
     if (!addresses || addresses.length === 0) {
       getAllAddresses();
@@ -35,8 +34,10 @@ const OrderSummary = () => {
 
   const handlePayment = async () => {
     setIsDisabled(true);
+
     if (!addresses || addresses.length === 0) {
       toast.error("Please add an address in your profile before proceeding.");
+      setIsDisabled(false);
       return;
     }
 
@@ -44,18 +45,19 @@ const OrderSummary = () => {
       setIsModalOpen(true);
       return;
     }
-    processOrder(addresses[0]); // If only one address, proceed automatically
+
+    processOrder(addresses[0]);
   };
 
   const processOrder = async (address) => {
     if (!address) {
       toast.error("Please select an address before proceeding.");
+      setIsDisabled(false);
       return;
     }
 
     const stripe = await stripePromise;
     try {
-      // 🔹 Step 1: Create a Stripe Checkout Session
       const res = await axios.post("/payments/create-checkout-session", {
         products: cart,
         couponCode: isCouponApplied && coupon ? coupon.code : null,
@@ -68,18 +70,24 @@ const OrderSummary = () => {
         throw new Error("Stripe session ID is missing.");
       }
 
-      // 🔹 Step 2: Redirect to Stripe for Payment
       const result = await stripe.redirectToCheckout({ sessionId: session.id });
 
       if (result.error) {
         console.error("❌ Stripe Checkout Error:", result.error);
+        toast.error("Payment failed. Please try again.");
+        setIsDisabled(false);
       } else {
-        console.log("🛒 Clearing cart...");
         setTimeout(() => clearCart(), 500);
       }
     } catch (error) {
       toast.error("Payment processing failed. Please try again.");
+      setIsDisabled(false);
     }
+  };
+
+  const handleModalCancel = () => {
+    setIsModalOpen(false);
+    setIsDisabled(false); // ✅ Reset the button if modal is closed without selection
   };
 
   return (
@@ -132,7 +140,7 @@ const OrderSummary = () => {
           >
             {isDisabled ? (
               <>
-                <Loader className="inline-block mr-2 animate-spin" />{" "}
+                <Loader className="inline-block mr-2 animate-spin" />
                 Processing...
               </>
             ) : (
@@ -156,7 +164,7 @@ const OrderSummary = () => {
       {isModalOpen && (
         <AddressSelectionModal
           addresses={addresses}
-          onClose={() => setIsModalOpen(false)}
+          onClose={handleModalCancel}
           onSelect={(address) => {
             setSelectedAddress(address);
             setIsModalOpen(false);
