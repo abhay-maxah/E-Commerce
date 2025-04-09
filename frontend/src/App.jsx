@@ -1,4 +1,4 @@
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -21,6 +21,7 @@ import AllOrder from "./pages/AllOrder";
 import AddressForm from "./pages/AddressForm";
 import UserProfile from "./pages/UserProfile";
 import ScrollToTop from "./components/ScrollToTop";
+import ForgotPassword from "./pages/ForgotPassword";
 
 // 🔐 Wrapper for Google login
 const GoogleAuthWrapper = () => {
@@ -34,6 +35,7 @@ const GoogleAuthWrapper = () => {
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
   const { getCartItems } = useCartStore();
+  const location = useLocation();
 
   useEffect(() => {
     checkAuth();
@@ -45,12 +47,16 @@ function App() {
 
   if (checkingAuth) return <LoadingSpinner />;
 
+  // Paths where NavBar should be hidden
+  const hideNavBarRoutes = ["/forgot-password"];
+
   return (
     <>
       <ScrollToTop />
       <div className="min-h-screen bg-[#fcf7f8] text-[#A31621] relative overflow-hidden">
         <div className="relative z-50">
-          <NavBar />
+          {!hideNavBarRoutes.includes(location.pathname) && <NavBar />}
+
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route
@@ -72,6 +78,7 @@ function App() {
               }
             />
             <Route path="/category/:category" element={<CategoryPage />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/product/:productId" element={<ProductDetail />} />
             <Route
               path="/cart"

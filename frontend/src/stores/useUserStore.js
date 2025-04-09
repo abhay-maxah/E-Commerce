@@ -50,6 +50,16 @@ export const useUserStore = create((set, get) => ({
       throw error;
     }
   },
+  sendCodeForgot: async (email) => {
+    try {
+      const res = await axios.post("/auth/send-code-forgot", { email });
+      toast.success(res.data.message || "Code sent successfully");
+      return res.data.code;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to send code");
+      throw error;
+    }
+  },
 
   verifyCode: async (email, enteredCode) => {
     try {
@@ -82,8 +92,8 @@ export const useUserStore = create((set, get) => ({
   },
   deleteUser: async (id) => {
     try {
-      await axios.delete(`/auth/${id}`);
-      toast.success("User deleted successfully");
+      const res = await axios.delete(`/auth/${id}`);
+      return res;
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");
     }
@@ -113,6 +123,26 @@ export const useUserStore = create((set, get) => ({
       throw error;
     }
   },
+  resetPassword: async (email, password) => {
+    if (!email || !password) {
+      toast.error("Email and password are required");
+      return;
+    }
+
+    try {
+      const response = await axios.post("/auth/reset-password", {
+        email,
+        password,
+      });
+      toast.success(response.data.message || "Password reset successful");
+      return true;
+    } catch (error) {
+      console.error("Reset Password Error:", error);
+      toast.error(error.response?.data?.message || "An error occurred while resetting the password");
+      return false;
+    }
+  },
+
 }));
 
 // TODO: Implement the axios interceptors for refreshing access token

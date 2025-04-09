@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
@@ -21,13 +21,15 @@ const SignUpPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    code: ""
+    code: "",
   });
+
   const [sentCode, setSentCode] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [sendingCode, setSendingCode] = useState(false); // For disabling button
-  const [codeVerified, setCodeVerified] = useState(false); // Optional
+  const [sendingCode, setSendingCode] = useState(false);
+  const [codeVerified, setCodeVerified] = useState(false);
+  const [timer, setTimer] = useState(0); // New: Timer countdown
 
   const { signup, loading, sendCode, verifyCode } = useUserStore();
 
@@ -45,14 +47,29 @@ const SignUpPage = () => {
   const handleSendCode = async (email) => {
     if (!email) return toast.error("Enter your email address");
     try {
-      setSendingCode(true); // Disable button
+      setSendingCode(true);
       await sendCode(email);
+      setTimer(60); // Start 60s countdown
     } catch (err) {
       console.error("Send code failed:", err);
     } finally {
-      setSendingCode(false); // Enable back
+      setSendingCode(false);
     }
   };
+
+  // Countdown effect
+  useEffect(() => {
+    let interval;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
+
   return (
     <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <motion.div
@@ -118,7 +135,7 @@ const SignUpPage = () => {
               </div>
             </div>
 
-            {/* Password Field */}
+            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium">
                 Password
@@ -148,7 +165,7 @@ const SignUpPage = () => {
               </div>
             </div>
 
-            {/* Confirm Password Field */}
+            {/* Confirm Password */}
             <div>
               <label
                 htmlFor="confirmPassword"
@@ -179,44 +196,44 @@ const SignUpPage = () => {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff size={20} />
-                  ) : (
-                    <Eye size={20} />
-                  )}
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {/* Code Field with Send Button */}
+
+              {/* Code Field */}
               <div>
                 <label htmlFor="code" className="block mt-5 text-sm font-medium">
                   Verification Code
                 </label>
                 <div className="mt-1 relative flex rounded-md shadow-sm">
-                  <div className="relative flex-grow">
-                    <input
-                      id="code"
-                      type="text"
-                      required
-                      value={formData.code}
-                      onChange={(e) =>
-                        setFormData({ ...formData, code: e.target.value })
-                      }
-                      className="block w-full px-3 py-2 pl-3 pr-3 rounded-l-md shadow-sm bg-transparent placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-                      placeholder="Enter code"
-                    />
-                  </div>
+                  <input
+                    id="code"
+                    type="text"
+                    required
+                    value={formData.code}
+                    onChange={(e) =>
+                      setFormData({ ...formData, code: e.target.value })
+                    }
+                    className="block w-full px-3 py-2 pl-3 pr-3 rounded-l-md shadow-sm bg-transparent placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                    placeholder="Enter code"
+                  />
                   <button
                     type="button"
                     onClick={() => handleSendCode(formData.email)}
                     className="px-4 py-2 bg-[#A31621] text-white rounded-r-md hover:bg-[#8f101a] text-sm disabled:opacity-50"
-                    disabled={sendingCode}
+                    disabled={sendingCode || timer > 0}
                   >
-                    {sendingCode ? "Sending..." : "Send Code"}
+                    {sendingCode
+                      ? "Sending..."
+                      : timer > 0
+                        ? `Resend in ${timer}s`
+                        : "Send Code"}
                   </button>
-
                 </div>
               </div>
             </div>
+
+            {/* Submit Button */}
             <button
               type="submit"
               className="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium bg-transparent border border-[#A31621] hover:bg-[#A31621] hover:text-white focus:outline-none"
@@ -224,15 +241,12 @@ const SignUpPage = () => {
             >
               {loading ? (
                 <>
-                  <Loader
-                    className="mr-2 h-5 w-5 animate-spin"
-                    aria-hidden="true"
-                  />
+                  <Loader className="mr-2 h-5 w-5 animate-spin" />
                   Loading...
                 </>
               ) : (
                 <>
-                  <UserPlus className="mr-2 h-5 w-5" aria-hidden="true" />
+                  <UserPlus className="mr-2 h-5 w-5" />
                   Sign up
                 </>
               )}

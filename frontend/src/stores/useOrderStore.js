@@ -2,11 +2,12 @@ import { create } from "zustand";
 import axios from "../lib/axios";
 import { toast } from "react-hot-toast";
 
-export const useOrderStore = create((set) => ({
+export const useOrderStore = create((set, get) => ({
   orders: [],
   loading: false,
 
-  // Fetch orders for a user
+
+
   fetchOrdersForUser: async (userId) => {
     if (!userId) return toast.error("User ID is required");
 
@@ -19,6 +20,7 @@ export const useOrderStore = create((set) => ({
       toast.error(error.response?.data?.message || "An error occurred");
     }
   },
+
   fetchOrdersForAdmin: async () => {
     set({ loading: true });
     try {
@@ -28,10 +30,11 @@ export const useOrderStore = create((set) => ({
       set({ loading: false });
       toast.error(
         error.response?.data?.message ||
-          "An error occurred while fetching orders"
+        "An error occurred while fetching orders"
       );
     }
   },
+
   updateStatus: async (orderId, status) => {
     try {
       await axios.put(`/orders/${orderId}/status`, { status });
@@ -43,7 +46,6 @@ export const useOrderStore = create((set) => ({
     }
   },
 
-  // Download invoice
   downloadInvoice: async (orderId) => {
     try {
       const response = await axios.get(`/orders/${orderId}/invoice`, {
@@ -61,4 +63,15 @@ export const useOrderStore = create((set) => ({
       toast.error("Error downloading invoice");
     }
   },
+
+  emailInvoice: async (orderId) => {
+    try {
+      await axios.get(`/orders/invoice/email/${orderId}`);
+      toast.success("Invoice emailed successfully!");
+    } catch (error) {
+      toast.error("Failed to email invoice");
+      console.error("Email Invoice Error:", error);
+    }
+  }
+
 }));

@@ -1,26 +1,41 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useOrderStore } from "../stores/useOrderStore";
 import { useUserStore } from "../stores/useUserStore";
 import { toast } from "react-hot-toast";
+import { Download, Mail, Loader2 } from "lucide-react";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const AllOrder = () => {
-  const { orders, loading, fetchOrdersForUser, downloadInvoice } =
-    useOrderStore();
+  const {
+    orders,
+    fetchOrdersForUser,
+    downloadInvoice,
+    emailInvoice,
+  } = useOrderStore();
+
   const { user, checkingAuth } = useUserStore();
 
+  const [pageLoading, setPageLoading] = useState(true);
+  const [loadingOrderId, setLoadingOrderId] = useState(null);
+  const [emailingOrderId, setEmailingOrderId] = useState(null);
+
   useEffect(() => {
-    if (!checkingAuth) {
-      if (user) {
-        fetchOrdersForUser(user._id);
-      } else {
-        toast.error("Please log in to view your orders.");
+    const fetchOrders = async () => {
+      if (!checkingAuth) {
+        if (user) {
+          await fetchOrdersForUser(user._id);
+        } else {
+          toast.error("Please log in to view your orders.");
+        }
+        setPageLoading(false);
       }
-    }
+    };
+
+    fetchOrders();
   }, [fetchOrdersForUser, checkingAuth, user]);
 
-  if (loading) return <LoadingSpinner />;
+  if (pageLoading) return <LoadingSpinner />;
 
   return (
     <div className="min-h-screen bg-[#fcf7f8] flex flex-col items-center px-4 sm:px-6 lg:px-8">
@@ -45,24 +60,12 @@ const AllOrder = () => {
               <table className="w-full divide-y divide-gray-300">
                 <thead className="bg-[#A31621]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">
-                      Sr No
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">
-                      Products
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">
-                      Total Quantity
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">
-                      Total Price
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">
-                      Invoice
-                    </th>
+                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">Sr No</th>
+                    <th className="px-4 py-3 text-center text-xs sm:text-sm font-medium text-white uppercase">Products</th>
+                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">Total Quantity</th>
+                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">Total Price</th>
+                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">Status</th>
+                    <th className="px-4 py-3 text-center text-xs sm:text-sm font-medium text-white uppercase">Invoice</th>
                   </tr>
                 </thead>
                 <tbody className="bg-[#fcf7f8] divide-y divide-gray-300">
@@ -78,34 +81,42 @@ const AllOrder = () => {
                       (sum, p) => sum + p.price * p.quantity,
                       0
                     );
-
                     return (
-                      <tr
-                        key={order._id}
-                        className="hover:bg-red-50 transition"
-                      >
-                        <td className="px-4 py-4 text-gray-700 font-semibold">
-                          {index + 1}
-                        </td>
-                        <td className="px-4 py-4 text-[#A31621] font-semibold break-words max-w-xs">
-                          {productNames}
-                        </td>
-                        <td className="px-4 py-4 text-gray-700">
-                          {totalQuantity}
-                        </td>
-                        <td className="px-4 py-4 text-gray-700">
-                          Rs.{totalPrice.toFixed(2)}
-                        </td>
-                        <td className="px-4 py-4 text-[#A31621] font-semibold">
-                          {order.orderStatus}
-                        </td>
+                      <tr key={order._id} className="hover:bg-red-50 transition">
+                        <td className="px-4 py-4 text-gray-700 font-semibold">{index + 1}</td>
+                        <td className="px-4 py-4 text-[#A31621] font-semibold break-words max-w-xs">{productNames}</td>
+                        <td className="px-4 py-4 text-gray-700">{totalQuantity}</td>
+                        <td className="px-4 py-4 text-gray-700">Rs.{totalPrice.toFixed(2)}</td>
+                        <td className="px-4 py-4 text-[#A31621] font-semibold">{order.orderStatus}</td>
                         <td className="px-4 py-4">
-                          <button
-                            onClick={() => downloadInvoice(order._id)}
-                            className="bg-[#A31621] hover:bg-red-700 text-white px-3 py-1 rounded-md font-medium transition duration-300 ease-in-out"
-                          >
-                            Download
-                          </button>
+                          <div className="flex justify-center items-center flex-col sm:flex-row gap-2">
+                            <button
+                              onClick={async () => {
+                                setLoadingOrderId(order._id);
+                                await downloadInvoice(order._id);
+                                setLoadingOrderId(null);
+                              }}
+                              disabled={loadingOrderId === order._id}
+                              className="flex items-center gap-2 px-3 py-1 rounded-md font-medium bg-[#A31621] hover:bg-red-700 text-white transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Download className="h-4 w-4" />
+                              {loadingOrderId === order._id ? "Downloading..." : "Get Invoice"}
+                            </button>
+
+                            <button
+                              onClick={async () => {
+                                setEmailingOrderId(order._id);
+                                await emailInvoice(order._id);
+                                setEmailingOrderId(null);
+                              }}
+                              disabled={emailingOrderId === order._id}
+                              className="flex items-center gap-2 px-3 py-1 rounded-md font-medium bg-[#A31621] hover:bg-red-700 text-white transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Mail className="h-4 w-4" />
+                              {emailingOrderId === order._id ? "Sending..." : "Email"}
+                            </button>
+
+                          </div>
                         </td>
                       </tr>
                     );
@@ -121,9 +132,7 @@ const AllOrder = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <p className="text-lg text-gray-600 font-medium">
-              No orders found.
-            </p>
+            <p className="text-lg text-gray-600 font-medium">No orders found.</p>
             <p className="text-sm text-gray-500">
               It looks like you haven’t placed any orders yet.
             </p>

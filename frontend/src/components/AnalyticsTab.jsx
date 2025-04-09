@@ -47,13 +47,13 @@ const AnalyticsTab = () => {
   if (isLoading) {
     return <LoadingSpinner />;
   }
-
+  const user = analyticsData.users - 1;
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <AnalyticsCard
           title="Total Users"
-          value={analyticsData.users.toLocaleString()}
+          value={user.toLocaleString()}
           icon={Users}
           color="from-emerald-500 to-teal-700"
           onClick={() => setSelectedTab("users")}

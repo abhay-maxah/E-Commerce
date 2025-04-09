@@ -57,7 +57,7 @@ const LoginPage = () => {
       </motion.div>
 
       <motion.div
-        className="mt-8 sm:mx-auto sm:w-full sm:max-w-md"
+        className="border border-[#A31621] mt-8 sm:mx-auto sm:w-full sm:max-w-md"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
@@ -110,6 +110,11 @@ const LoginPage = () => {
             {errorMessage && (
               <p className="text-sm text-red-500 text-center">{errorMessage}</p>
             )}
+            <div className="text-sm text-right">
+              <Link to="/forgot-password" className="font-medium text-[#A31621] hover:underline">
+                Forgot password?
+              </Link>
+            </div>
 
             <button
               type="submit"
