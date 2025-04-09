@@ -47,6 +47,12 @@ const AddressForm = ({ existingAddress, closeModal }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const phonePattern = /^[0-9]{10}$/;
+    if (!phonePattern.test(addressData.phoneNumber)) {
+      toast.error("Phone number must be exactly 10 digits.");
+      return;
+    }
+
     const formattedData = {
       user: user._id,
       houseName: addressData.houseName,
@@ -78,6 +84,7 @@ const AddressForm = ({ existingAddress, closeModal }) => {
 
     closeModal();
   };
+
 
   // ✅ Full List of Indian States & Union Territories
   const indianStates = [
@@ -123,9 +130,8 @@ const AddressForm = ({ existingAddress, closeModal }) => {
 
   return (
     <div
-      className={`flex flex-col justify-center py-12 sm:px-6 lg:px-8 ${
-        !existingAddress ? "lg:mt-10" : "mt-0"
-      }`}
+      className={`flex flex-col justify-center py-12 sm:px-6 lg:px-8 ${!existingAddress ? "lg:mt-10" : "mt-0"
+        }`}
     >
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-extrabold">
@@ -239,10 +245,7 @@ const AddressForm = ({ existingAddress, closeModal }) => {
             </div>
 
             <div>
-              <label
-                htmlFor="phoneNumber"
-                className="block text-sm font-medium"
-              >
+              <label htmlFor="phoneNumber" className="block text-sm font-medium">
                 Phone Number
               </label>
               <div className="relative flex items-center">
@@ -254,11 +257,15 @@ const AddressForm = ({ existingAddress, closeModal }) => {
                   required
                   value={addressData.phoneNumber}
                   onChange={handleChange}
+                  pattern="[0-9]{10}"
+                  maxLength={10}
+                  minLength={10}
                   className="block w-full px-3 py-2 pl-10 bg-transparent rounded-md shadow-sm"
-                  placeholder="Enter phone number"
+                  placeholder="Enter 10-digit phone number"
                 />
               </div>
             </div>
+
 
             <button
               type="submit"

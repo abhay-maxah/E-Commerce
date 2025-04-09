@@ -35,14 +35,10 @@ const addressSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
     required: true,
-    validate: {
-      validator: function (v) {
-        return /^\d{10,}$/.test(v); // Ensures at least 10 digits
-      },
-      message: "Phone number must be at least 10 digits long",
-    },
+    maxlength: 10,
+    minlength: 10,
   },
-});
+},);
 
 const Address = mongoose.model("Address", addressSchema);
 export default Address;
