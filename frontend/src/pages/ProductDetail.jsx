@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import AddressSelectionModal from "../components/AddressSelectionModal";
 
 const stripePromise = loadStripe(
-  "pk_test_51QzEaMEEwnxF6uaXFg88SDeBc2gwYDHPmRvr50njYWLZheM2IhU3jCIC5LMgu0iE3ESsQCZJx4USDXBgr5H0oUUR00eenCOvyw"
+  "pk_test_51RCbq8QQS5dYukip8w5f6jioCO89ij7uxQDBTgQbtroyVdsp3tTcSAaIMwXKBjDcCXuwjqxjTMvlJociOALT0FEq00uhbHN90f"
 );
 
 const ProductDetail = () => {
@@ -82,6 +82,12 @@ const ProductDetail = () => {
       return;
     }
 
+    const deliveryCharge = user.premium ? 0 : 70;
+
+    if (!user.premium) {
+      toast.error("₹70 delivery charge applied. Become a premium user to get free delivery.");
+    }
+
     const stripe = await stripePromise;
     try {
       const res = await axios.post("/payments/create-checkout-session", {
@@ -90,6 +96,7 @@ const ProductDetail = () => {
           : cart.map((item) => ({ ...item, quantity: 1 })),
         couponCode: isCouponApplied && coupon ? coupon.code : null,
         address: JSON.stringify(selectedAddress),
+        deliveryCharge,
       });
 
       const session = res.data;
@@ -111,7 +118,7 @@ const ProductDetail = () => {
 
   const handleModalCancel = () => {
     setIsModalOpen(false);
-    setIsDisabled(false); // Reset to allow "Buy Now" again
+    setIsDisabled(false);
   };
 
   return (
@@ -145,13 +152,9 @@ const ProductDetail = () => {
             <h3 className="text-xl font-semibold">Shipping Information</h3>
             <ul className="list-disc pl-6 text-gray-600">
               <li>
-                We dispatch all products within 24-48 hours of placing the
-                order.
+                We dispatch all products within 24-48 hours of placing the order.
               </li>
-              <li>
-                Post dispatch, delivery may take 1-3 days for metro and 3-6 days
-                for non-metro locations.
-              </li>
+
               <li>We ensure the best courier services for your orders.</li>
               <li>Proper packaging prevents in-transit damages.</li>
             </ul>
@@ -167,7 +170,11 @@ const ProductDetail = () => {
             <p className="text-gray-600">Baking City - 400001, Dessert Land</p>
             <p className="text-gray-600">Country of Origin: Cookie Kingdom</p>
           </div>
-
+          {user && !user.premium && (
+            <p className="text-sm text-red-600 font-medium mb-2">
+              Note: ₹70 delivery charge will apply. Become a premium user to get free delivery.
+            </p>
+          )}
           <div className="mt-6 flex flex-col sm:flex-row gap-4">
             <button
               className="flex-1 px-6 py-3 border border-[#A31621] text-[#A31621] font-semibold rounded-lg hover:bg-[#A31621] hover:text-white transition duration-300"
@@ -200,7 +207,7 @@ const ProductDetail = () => {
             onSelect={(address) => {
               setSelectedAddress(address);
               setIsModalOpen(false);
-              handleBuyNow(); // Retry checkout after address selection
+              handleBuyNow();
             }}
           />
         )}

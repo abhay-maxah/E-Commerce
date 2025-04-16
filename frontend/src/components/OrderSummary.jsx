@@ -8,14 +8,16 @@ import axios from "../lib/axios";
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import AddressSelectionModal from "./AddressSelectionModal";
+import { useUserStore } from "../stores/useUserStore"; // Make sure to import the user store
 
 const stripePromise = loadStripe(
-  "pk_test_51QzEaMEEwnxF6uaXFg88SDeBc2gwYDHPmRvr50njYWLZheM2IhU3jCIC5LMgu0iE3ESsQCZJx4USDXBgr5H0oUUR00eenCOvyw"
+  "pk_test_51RCbq8QQS5dYukip8w5f6jioCO89ij7uxQDBTgQbtroyVdsp3tTcSAaIMwXKBjDcCXuwjqxjTMvlJociOALT0FEq00uhbHN90f"
 );
 
 const OrderSummary = () => {
   const { total, subtotal, coupon, isCouponApplied, cart, clearCart } =
     useCartStore();
+  const { user } = useUserStore(); // Get user data from the store
   const [isDisabled, setIsDisabled] = useState(false);
   const { addresses, getAllAddresses } = useAddressStore();
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -27,9 +29,11 @@ const OrderSummary = () => {
     }
   }, [getAllAddresses, addresses]);
 
+  const deliveryCharge = 70; // Set delivery charge
+  const isPremiumUser = user?.premium; // Check if the user is premium
   const savings = subtotal - total;
   const formattedSubtotal = subtotal.toFixed(2);
-  const formattedTotal = total.toFixed(2);
+  const formattedTotal = (isPremiumUser ? total : total + deliveryCharge).toFixed(2); // Add delivery charge to total only if not premium
   const formattedSavings = savings.toFixed(2);
 
   const handlePayment = async () => {
@@ -62,6 +66,7 @@ const OrderSummary = () => {
         products: cart,
         couponCode: isCouponApplied && coupon ? coupon.code : null,
         address: JSON.stringify(address),
+        deliveryCharge: isPremiumUser ? 0 : deliveryCharge, // Send 0 if user is premium, otherwise send delivery charge
       });
 
       const session = res.data;
@@ -122,6 +127,13 @@ const OrderSummary = () => {
                 <dd className="text-base font-medium">
                   -{coupon.discountPercentage}%
                 </dd>
+              </dl>
+            )}
+
+            {!isPremiumUser && (
+              <dl className="flex items-center justify-between gap-4">
+                <dt className="text-base font-normal">Delivery Charge</dt>
+                <dd className="text-base font-medium">Rs.{deliveryCharge}</dd>
               </dl>
             )}
 

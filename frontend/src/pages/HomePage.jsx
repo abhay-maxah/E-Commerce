@@ -7,14 +7,17 @@ import HowToSection from "../components/HowToSection";
 import HeroCard from "../components/HeroCard";
 import Subscribe from "../components/Subscribe";
 import Footer from "../components/Footer";
+import PlaneCard from "../components/PlanCard";
+import { useUserStore } from "../stores/useUserStore"; // Assuming useUserStore holds user info
 
 const categories = [
   { href: "/Cookies", name: "Cookies", imageUrl: "/baseCookies.jpg" },
-  { href: "/Chocolates", name: "chocolates", imageUrl: "/baseChocolates.jpg" },
+  { href: "/Chocolates", name: "Chocolates", imageUrl: "/baseChocolates.jpg" },
 ];
 
 const HomePage = () => {
   const { fetchFeaturedProducts, products, isLoading } = useProductStore();
+  const { user } = useUserStore(); // Get user data from the store
   const categorySectionRef = useRef(null);
 
   useEffect(() => {
@@ -46,6 +49,9 @@ const HomePage = () => {
           <FeaturedProducts featuredProducts={products} />
         )}
       </div>
+
+      {/* Conditionally render PlaneCard if the user is not premium */}
+      {user && !user.premium && <PlaneCard />}
 
       <WhyChooseUs />
       <HowToSection />

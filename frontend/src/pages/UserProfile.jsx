@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trash2, Edit, Plus, X, AlertTriangle } from "lucide-react";
+import { Trash2, Edit, Plus, X, AlertTriangle, Star } from "lucide-react"; // Import Star icon for premium symbol
 import { useUserStore } from "../stores/useUserStore";
 import { useAddressStore } from "../stores/useAddressStore";
 import AddressForm from "./AddressForm";
-import LoadingSpinner from "../components/LoadingSpinner"
-import { toast } from "react-hot-toast"
+import LoadingSpinner from "../components/LoadingSpinner";
+import { toast } from "react-hot-toast";
+
 const UserProfile = () => {
   const { user, checkAuth, deleteUser, logout } = useUserStore();
   const { addresses, getAllAddresses, togelVisiblity, loading } = useAddressStore();
@@ -50,8 +51,8 @@ const UserProfile = () => {
       const response = await deleteUser(user._id); // Should return a success/failure status
 
       if (response?.status === 200) {
-        await logout();             // Clear the user session/token
-        navigate("/login");         // Redirect to login
+        await logout(); // Clear the user session/token
+        navigate("/login"); // Redirect to login
         toast.success("Account deleted successfully");
       } else {
         toast.error("Failed to delete account");
@@ -60,10 +61,9 @@ const UserProfile = () => {
       console.error("Account deletion failed:", error);
       toast.error("Something went wrong while deleting account");
     } finally {
-      setShowDeleteModal(false);    // Close modal in all cases
+      setShowDeleteModal(false); // Close modal in all cases
     }
   };
-
 
   if (isUserLoading) {
     return (
@@ -105,6 +105,13 @@ const UserProfile = () => {
               <div>
                 <p className="text-gray-600">Role: {user?.role}</p>
               </div>
+              {/* Display Prime Account if the user is premium */}
+              {user?.premium && (
+                <div className="flex items-center text-red-500">
+                  <Star size={18} className="mr-2" /> {/* Show a star icon */}
+                  <span className="font-semibold"> CookiesMan Plus Account</span>
+                </div>
+              )}
               <div className="border-t pt-4 mt-4 space-y-2">
                 <div>
                   <span className="font-semibold">Email:</span> {user?.email}
