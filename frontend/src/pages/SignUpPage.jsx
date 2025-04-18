@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { toast } from "react-hot-toast";
-
 import {
   UserPlus,
   Mail,
@@ -15,13 +14,16 @@ import {
 import { motion } from "framer-motion";
 import { useUserStore } from "../stores/useUserStore";
 
-const SignUpPage = () => {
+const SignUpPage = ({ userType = "user" }) => {
+  const location = useLocation();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
     code: "",
+    role: userType, // 👈 include role in form data
   });
 
   const [sentCode, setSentCode] = useState(null);
@@ -29,16 +31,16 @@ const SignUpPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [sendingCode, setSendingCode] = useState(false);
   const [codeVerified, setCodeVerified] = useState(false);
-  const [timer, setTimer] = useState(0); // New: Timer countdown
+  const [timer, setTimer] = useState(0);
 
   const { signup, loading, sendCode, verifyCode } = useUserStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await verifyCode(formData.email, formData.code); // Validate from backend
+      await verifyCode(formData.email, formData.code);
       setCodeVerified(true);
-      signup(formData); // Proceed to signup
+      signup(formData); // includes role
     } catch (err) {
       console.error("Verification failed", err);
     }
@@ -49,7 +51,7 @@ const SignUpPage = () => {
     try {
       setSendingCode(true);
       await sendCode(email);
-      setTimer(60); // Start 60s countdown
+      setTimer(60);
     } catch (err) {
       console.error("Send code failed:", err);
     } finally {
@@ -57,7 +59,6 @@ const SignUpPage = () => {
     }
   };
 
-  // Countdown effect
   useEffect(() => {
     let interval;
     if (timer > 0) {
@@ -79,7 +80,9 @@ const SignUpPage = () => {
         transition={{ duration: 0.8 }}
       >
         <h2 className="mt-6 text-center text-3xl font-extrabold">
-          Create your account
+          {userType === "admin"
+            ? "Create your account as Admin"
+            : "Create your account"}
         </h2>
       </motion.div>
 

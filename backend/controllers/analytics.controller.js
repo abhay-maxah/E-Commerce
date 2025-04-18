@@ -3,7 +3,8 @@ import Product from "../models/product.model.js";
 import User from "../models/user.model.js";
 
 export const getAnalyticsData = async () => {
-	const totalUsers = await User.countDocuments();
+	const totalUsers = await User.countDocuments({ role: "user" });
+	console.log(totalUsers);
 	const totalProducts = await Product.countDocuments();
 
 	const salesData = await Order.aggregate([

@@ -53,7 +53,7 @@ const AnalyticsTab = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <AnalyticsCard
           title="Total Users"
-          value={user.toLocaleString()}
+          value={analyticsData.users.toLocaleString()}
           icon={Users}
           color="from-emerald-500 to-teal-700"
           onClick={() => setSelectedTab("users")}

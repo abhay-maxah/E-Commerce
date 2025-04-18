@@ -41,27 +41,30 @@ const setCookies = (res, accessToken, refreshToken) => {
 };
 
 export const signup = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role = "user" } = req.body; // Default role = "user"
+
   try {
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "Email already exists" });
     }
-    const user = await User.create({ name, email, password });
-    //authenticate
-    //store token in redis
+
+    const user = await User.create({ name, email, password, role }); // Include role here
+
+    // authenticate
     const { accessToken, refreshToken } = generateTokens(user._id);
     await storeRefreshToken(user._id, refreshToken);
-    // store cookies
+
     setCookies(res, accessToken, refreshToken);
+
     res.status(201).json({
       user: {
         name: user.name,
         email: user.email,
         _id: user._id,
-        role: user.role,
+        role: user.role, // will reflect 'admin' or 'user'
       },
-      message: "user Created Successfully",
+      message: "User created successfully",
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -152,7 +155,7 @@ export const getProfile = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const customers = await User.find({ role: "customer" });
+    const customers = await User.find({ role: "user" });
     res.status(200).json(customers);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });

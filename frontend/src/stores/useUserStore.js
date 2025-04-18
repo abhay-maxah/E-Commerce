@@ -8,18 +8,27 @@ export const useUserStore = create((set, get) => ({
   setUser: (user) => set({ user }),
 
 
-  signup: async ({ name, email, password, confirmPassword }) => {
+  signup: async ({ name, email, password, confirmPassword, role = "user" }) => {
     set({ loading: true });
+
     if (password !== confirmPassword) {
       set({ loading: false });
       return toast.error("Passwords do not match");
     }
+
     try {
-      const res = await axios.post("/auth/signup", { name, email, password });
+      const res = await axios.post("/auth/signup", {
+        name,
+        email,
+        password,
+        role, // include role in request body
+      });
+
       set({ user: res.data.user, loading: false });
+      toast.success("Signup successful!");
     } catch (error) {
       set({ loading: false });
-      toast.error(error.response.data.message || "An error occurred");
+      toast.error(error?.response?.data?.message || "An error occurred");
     }
   },
   googleAuth: async (code) => {
