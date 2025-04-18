@@ -81,6 +81,7 @@ export const login = async (req, res) => {
       res.json({
         _id: user._id,
         name: user.name,
+        premium: user.premium,
         email: user.email,
         role: user.role,
       });
@@ -187,8 +188,10 @@ export const loginGoogle = async (req, res) => {
 
     res.json({
       _id: user._id,
+      image: user.image,
       name: user.name,
       email: user.email,
+      premium: user.premium,
       role: user.role,
     });
   } catch (error) {

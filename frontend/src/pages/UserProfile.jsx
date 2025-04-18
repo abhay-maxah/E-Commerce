@@ -9,7 +9,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { toast } from "react-hot-toast";
 
 const UserProfile = () => {
-  const { user, checkAuth, deleteUser, logout } = useUserStore();
+  const { user, checkAuth, deleteUser, checkingAuth, logout } = useUserStore();
   const { addresses, getAllAddresses, togelVisiblity, loading } = useAddressStore();
   const navigate = useNavigate();
 
@@ -65,7 +65,7 @@ const UserProfile = () => {
     }
   };
 
-  if (isUserLoading) {
+  if (isUserLoading || checkingAuth) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <LoadingSpinner />
@@ -88,7 +88,7 @@ const UserProfile = () => {
             <img
               src={user.image}
               alt={`${user.name}'s profile picture`}
-              className="w-32 h-32 rounded-full object-cover border-4 border-[#A31621]"
+              className="w-32 h-32 rounded-full object-cover border-1 border-[#A31621]"
               referrerPolicy="no-referrer"
             />
           ) : (

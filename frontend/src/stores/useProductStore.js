@@ -114,20 +114,23 @@ export const useProductStore = create((set) => ({
     set({ loading: true });
     try {
       const response = await axios.patch(`/products/${productId}`);
-      // this will update the isFeatured prop of the product
-      set((prevProducts) => ({
-        products: prevProducts.products.map((product) =>
+      const updatedProduct = response.data;
+
+      set((state) => {
+        const updatedProducts = state.products.map((product) =>
           product._id === productId
-            ? { ...product, isFeatured: response.data.isFeatured }
+            ? { ...product, isFeatured: updatedProduct.isFeatured }
             : product
-        ),
-        loading: false,
-      }));
+        );
+        return { products: updatedProducts, loading: false };
+      });
     } catch (error) {
       set({ loading: false });
-      toast.error(error.response.data.error || "Failed to update product");
+      toast.error(error.response?.data?.error || "Failed to update product");
     }
   },
+
+
   fetchFeaturedProducts: async () => {
     set({ loading: true });
     try {

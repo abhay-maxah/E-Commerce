@@ -27,7 +27,7 @@ const OrderSummary = () => {
     if (!addresses || addresses.length === 0) {
       getAllAddresses();
     }
-  }, [getAllAddresses, addresses]);
+  }, [getAllAddresses]);
 
   const deliveryCharge = 70; // Set delivery charge
   const isPremiumUser = user?.premium; // Check if the user is premium

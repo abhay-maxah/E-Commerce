@@ -1,10 +1,58 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trash, Star, Pencil } from "lucide-react";
 import { useProductStore } from "../stores/useProductStore";
 import LoadingSpinner from "./LoadingSpinner";
 import Pagination from "./Pagination";
 import ProductForm from "./CreateProductForm";
+import { Trash, Star, Pencil } from "lucide-react";
+
+// 👇 Memoized ProductRow Component
+const ProductRow = React.memo(({ product, index, onEdit, onDelete, onToggleFeatured }) => {
+  return (
+    <tr className="hover:bg-red-50">
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+        {index + 1}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap flex items-center gap-3">
+        <img
+          className="h-10 w-10 rounded-full object-cover"
+          src={product.image}
+          alt={product.name}
+        />
+        <span className="text-sm font-medium">{product.name}</span>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
+        {Number(product.price || 0).toFixed(2)}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm">{product.category}</td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <button
+          onClick={() => onToggleFeatured(product._id)}
+          className={`p-1 rounded-full ${product.isFeatured
+            ? "bg-red-500 text-white"
+            : "bg-gray-200 text-gray-900"
+            } hover:bg-red-500 transition-colors duration-200`}
+        >
+          <Star className="h-5 w-5" />
+        </button>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3 justify-center">
+        <button
+          onClick={() => onEdit(product)}
+          className="text-red-500 hover:text-[#A31621]"
+        >
+          <Pencil className="h-5 w-5" />
+        </button>
+        <button
+          onClick={() => onDelete(product._id)}
+          className="text-red-500 hover:text-[#A31621]"
+        >
+          <Trash className="h-5 w-5" />
+        </button>
+      </td>
+    </tr>
+  );
+});
 
 const ProductsList = () => {
   const {
@@ -36,6 +84,11 @@ const ProductsList = () => {
     setCurrentPage(1);
   };
 
+  const handleCategoryChange = (e) => {
+    setCategoryFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
   const openEditModal = (product) => {
     setEditingProduct(product);
     setIsAdding(false);
@@ -54,11 +107,6 @@ const ProductsList = () => {
     fetchAllProducts({ page: 1, sortBy: "newest" });
   };
 
-  const handleCategoryChange = (e) => {
-    setCategoryFilter(e.target.value);
-    setCurrentPage(1);
-  };
-
   return (
     <motion.div
       className="bg-white border border-[#A31621] text-[#A31621] shadow-lg rounded-3xl overflow-hidden max-w-auto mx-auto p-6"
@@ -66,7 +114,7 @@ const ProductsList = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
     >
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 ">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4">
         <h2 className="text-lg font-semibold text-[#A31621]">Product List</h2>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
           <label className="text-[#A31621] font-medium text-sm sm:text-base">
@@ -129,53 +177,14 @@ const ProductsList = () => {
             <tbody className="bg-white divide-y divide-[#A31621]">
               {products.length > 0 ? (
                 products.map((product, index) => (
-                  <tr key={product._id} className="hover:bg-red-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {index + 1}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap flex items-center gap-3">
-                      <img
-                        className="h-10 w-10 rounded-full object-cover"
-                        src={product.image}
-                        alt={product.name}
-                      />
-                      <span className="text-sm font-medium">
-                        {product.name}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
-                      {Number(product.price || 0).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {product.category}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() => toggleFeaturedProduct(product._id)}
-                        className={`p-1 rounded-full ${
-                          product.isFeatured
-                            ? "bg-red-500 text-white"
-                            : "bg-gray-200 text-gray-900"
-                        } hover:bg-red-500 transition-colors duration-200`}
-                      >
-                        <Star className="h-5 w-5" />
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3 justify-center">
-                      <button
-                        onClick={() => openEditModal(product)}
-                        className="text-red-500 hover:text-[#A31621]"
-                      >
-                        <Pencil className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => deleteProduct(product._id)}
-                        className="text-red-500 hover:text-[#A31621]"
-                      >
-                        <Trash className="h-5 w-5" />
-                      </button>
-                    </td>
-                  </tr>
+                  <ProductRow
+                    key={product._id}
+                    product={product}
+                    index={index}
+                    onEdit={openEditModal}
+                    onDelete={deleteProduct}
+                    onToggleFeatured={toggleFeaturedProduct}
+                  />
                 ))
               ) : (
                 <tr>

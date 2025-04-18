@@ -17,7 +17,12 @@ const TotalSale = () => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     await updateStatus(orderId, newStatus);
-    fetchOrdersForAdmin();
+    // Optimistically update order status locally
+    useOrderStore.setState((state) => ({
+      orders: state.orders.map((order) =>
+        order._id === orderId ? { ...order, orderStatus: newStatus } : order
+      ),
+    }));
   };
 
   if (loading) return <LoadingSpinner />;
@@ -44,24 +49,12 @@ const TotalSale = () => {
           <table className="w-full min-w-[800px] divide-y divide-[#A31621]">
             <thead className="bg-[#A31621] text-white">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
-                  Sr.No
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
-                  Customer
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
-                  Products
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
-                  Total
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
-                  Status
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Sr.No</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Customer</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Products</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Total</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase">Status</th>
               </tr>
             </thead>
             <tbody className="bg-[#fcf7f8] divide-y divide-[#A31621]">
@@ -86,7 +79,6 @@ const TotalSale = () => {
                       .map((item) => item.product?.name || "N/A")
                       .join(", ")}
                   </td>
-
                   <td className="px-6 py-4 whitespace-nowrap text-gray-700">
                     Rs.{order.totalAmount.toFixed(2)}
                   </td>
