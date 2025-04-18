@@ -29,7 +29,7 @@ const PurchaseCancelPage = () => {
           </div>
           <div className="space-y-4">
             <Link
-              to={"/"}
+              to={"/cart"}
               className="w-full bg-transparent border border-[#A31621]  hover:bg-[#A31621] hover:text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center"
             >
               <ArrowLeft className="mr-2" size={18} />

@@ -45,7 +45,7 @@ export const useUserStore = create((set, get) => ({
   sendCode: async (email) => {
     try {
       const res = await axios.post("/auth/send-code", { email });
-      toast.success(res.data.message || "Code sent successfully");
+      toast.success(res.data.message || "Code sent successfully via Mail");
       return res.data.code; // Temporarily return for client-side check
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to send code");

@@ -12,7 +12,7 @@ const SearchBar = () => {
   useEffect(() => {
     let isMounted = true; // Prevents setting state on unmounted component
 
-    if (searchQuery.length >= 3) {
+    if (searchQuery.length >= 1) {
       getAllProductsForSearch().then(() => {
         if (isMounted) {
           setFilteredProducts(
@@ -29,8 +29,7 @@ const SearchBar = () => {
     return () => {
       isMounted = false; // Cleanup function to prevent unwanted re-renders
     };
-  }, [searchQuery]); // Removed unnecessary dependencies to prevent re-renders
-
+  }, [searchQuery]);
   const handleProductClick = (productId) => {
     setSearchQuery("");
     setFilteredProducts([]); // Ensure suggestions disappear before navigation

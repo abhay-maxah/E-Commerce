@@ -28,7 +28,6 @@ export const useAddressStore = create((set) => ({
         addresses: [...state.addresses, res.data],
         loading: false,
       }));
-      toast.success("Address added successfully");
     } catch (error) {
       set({ loading: false });
       toast.error(error.response?.data?.message || "An error occurred");

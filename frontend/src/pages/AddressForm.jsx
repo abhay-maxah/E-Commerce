@@ -11,10 +11,13 @@ import {
 import { useAddressStore } from "../stores/useAddressStore";
 import { toast } from "react-hot-toast";
 import { useUserStore } from "../stores/useUserStore";
+import { useNavigate } from "react-router-dom";
+
 
 const AddressForm = ({ existingAddress, closeModal }) => {
   const { addAddress, updateAddress } = useAddressStore();
   const { user } = useUserStore();
+  const navigate = useNavigate();
 
   const [addressData, setAddressData] = useState({
     houseName: "",
@@ -70,6 +73,7 @@ const AddressForm = ({ existingAddress, closeModal }) => {
     } else {
       await addAddress(formattedData);
       toast.success("Address added successfully!");
+      navigate("/my-profile"); // ✅ Redirect after adding
     }
 
     setAddressData({
@@ -258,8 +262,7 @@ const AddressForm = ({ existingAddress, closeModal }) => {
                   value={addressData.phoneNumber}
                   onChange={handleChange}
                   pattern="[0-9]{10}"
-                  maxLength={10}
-                  minLength={10}
+
                   className="block w-full px-3 py-2 pl-10 bg-transparent rounded-md shadow-sm"
                   placeholder="Enter 10-digit phone number"
                 />

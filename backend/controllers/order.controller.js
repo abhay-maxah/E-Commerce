@@ -174,7 +174,7 @@ export const emailInvoice = async (req, res) => {
                 <p style="margin-top: 20px;">We hope to see you again soon for more delicious treats!</p>
                 
                 <div style="margin-top: 30px; text-align: center;">
-                  <a href="https://e-commerce-e9wg.onrender.com/" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: #A31621; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;">
+                  <a href="https://cookiesman.me/" target="_blank" style="display: inline-block; padding: 10px 20px; background-color: #A31621; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;">
                     Visit Our Website
                   </a>
                 </div>
