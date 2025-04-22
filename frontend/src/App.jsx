@@ -22,7 +22,7 @@ import AddressForm from "./pages/AddressForm";
 import UserProfile from "./pages/UserProfile";
 import ScrollToTop from "./components/ScrollToTop";
 import ForgotPassword from "./pages/ForgotPassword";
-
+import usePageTitle from "./hooks/usePageTitle";
 // 🔐 Wrapper for Google login
 const GoogleAuthWrapper = () => {
   return (
@@ -44,7 +44,7 @@ function App() {
   useEffect(() => {
     if (user) getCartItems();
   }, [user, getCartItems]);
-
+  usePageTitle()
   if (checkingAuth) return <LoadingSpinner />;
 
   // Paths where NavBar should be hidden
