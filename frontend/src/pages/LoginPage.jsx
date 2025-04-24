@@ -1,15 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-  LogIn,
-  Mail,
-  Lock,
-  ArrowRight,
-  Loader,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { LogIn, Mail, Lock, ArrowRight, Loader, Eye, EyeOff } from "lucide-react";
 import { useUserStore } from "../stores/useUserStore";
 import { useGoogleLogin } from "@react-oauth/google";
 
@@ -18,18 +10,53 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
 
   const { login, loading, googleAuth } = useUserStore();
+
+  // Function to handle reCAPTCHA execution
+  useEffect(() => {
+    const loadRecaptcha = () => {
+      if (window.grecaptcha) {
+        window.grecaptcha.ready(() => {
+          window.grecaptcha.execute("6LewqyErAAAAAJbiS2ByOtkI376mhlaF807odWLE", {
+            action: "login",
+          }).then((token) => {
+            setCaptchaToken(token);
+          }).catch((err) => {
+            console.error("CAPTCHA execute failed", err);
+          });
+        });
+      }
+    };
+
+    loadRecaptcha();
+  }, []);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+
+    if (!window.grecaptcha) {
+      setErrorMessage("Captcha is not ready yet.");
+      return;
+    }
+
     try {
-      await login(email, password);
-    } catch (err) {
-      setErrorMessage("Invalid credentials");
+      const token = await window.grecaptcha.execute(
+        "6LewqyErAAAAAJbiS2ByOtkI376mhlaF807odWLE",
+        { action: "login" }
+      );
+
+      setCaptchaToken(token);
+      await login(email, password, token); // pass token directly
+    } catch (error) {
+      console.error("Captcha verification failed", error);
+      setErrorMessage("Captcha verification failed. Please try again.");
     }
   };
+
 
   const handleGoogleLogin = useGoogleLogin({
     flow: "auth-code",
@@ -110,6 +137,7 @@ const LoginPage = () => {
             {errorMessage && (
               <p className="text-sm text-red-500 text-center">{errorMessage}</p>
             )}
+
             <div className="text-sm text-right">
               <Link to="/forgot-password" className="font-medium text-[#A31621] hover:underline">
                 Forgot password?

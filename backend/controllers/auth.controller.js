@@ -25,6 +25,32 @@ const storeRefreshToken = async (userId, refreshToken) => {
     7 * 24 * 60 * 60
   ); // 7 Days
 };
+
+const verifyCaptcha = async (captchaToken) => {
+  const secretKey = process.env.GOOGLE_CAPTCH_SECRET;
+  const url = `https://www.google.com/recaptcha/api/siteverify`;
+
+  try {
+    const response = await axios.post(url, null, {
+      params: {
+        secret: secretKey,
+        response: captchaToken,
+      },
+    });
+
+    const data = response.data;
+
+    // Log the full response for debugging (optional)
+    console.log("CAPTCHA verification result:", data);
+
+    // For reCAPTCHA v3: check success and minimum score threshold (e.g., 0.5)
+    return data.success && data.score >= 0.5;
+  } catch (error) {
+    console.error("Captcha verification error:", error.message);
+    return false;
+  }
+};
+
 const setCookies = (res, accessToken, refreshToken) => {
   res.cookie("accessToken", accessToken, {
     httpOnly: true, //prevent from xss attacks
@@ -41,9 +67,13 @@ const setCookies = (res, accessToken, refreshToken) => {
 };
 
 export const signup = async (req, res) => {
-  const { name, email, password, role = "user" } = req.body; // Default role = "user"
+  const { name, email, password, role = "user", captchaToken } = req.body; // Default role = "user"
 
   try {
+    if (!captchaToken || !(await verifyCaptcha(captchaToken))) {
+      return res.status(400).json({ message: "CAPTCHA verification failed" });
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "Email already exists" });
@@ -73,7 +103,10 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, captchaToken } = req.body;
+    if (!captchaToken || !(await verifyCaptcha(captchaToken))) {
+      return res.status(400).json({ message: "CAPTCHA verification failed" });
+    }
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "User not found" });
     if (user && (await user.comparePassword(password))) {

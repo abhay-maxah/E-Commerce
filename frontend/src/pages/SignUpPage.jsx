@@ -37,14 +37,27 @@ const SignUpPage = ({ userType = "user" }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
     try {
+      const token = await window.grecaptcha.execute("6LewqyErAAAAAJbiS2ByOtkI376mhlaF807odWLE", { action: "signup" });
+
       await verifyCode(formData.email, formData.code);
       setCodeVerified(true);
-      signup(formData); // includes role
+
+      // Send token to backend for verification
+      signup({ ...formData, captchaToken: token });
+
     } catch (err) {
-      console.error("Verification failed", err);
+      console.error("reCAPTCHA or verification failed", err);
+      toast.error("reCAPTCHA verification failed");
     }
   };
+
 
   const handleSendCode = async (email) => {
     if (!email) return toast.error("Enter your email address");

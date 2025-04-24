@@ -8,7 +8,7 @@ export const useUserStore = create((set, get) => ({
   setUser: (user) => set({ user }),
 
 
-  signup: async ({ name, email, password, confirmPassword, role = "user" }) => {
+  signup: async ({ name, email, password, confirmPassword, role = "user", captchaToken }) => {
     set({ loading: true });
 
     if (password !== confirmPassword) {
@@ -21,7 +21,8 @@ export const useUserStore = create((set, get) => ({
         name,
         email,
         password,
-        role, // include role in request body
+        role,
+        captchaToken, // ✅ Send CAPTCHA token
       });
 
       set({ user: res.data.user, loading: false });
@@ -31,6 +32,7 @@ export const useUserStore = create((set, get) => ({
       toast.error(error?.response?.data?.message || "An error occurred");
     }
   },
+
   googleAuth: async (code) => {
     try {
       const res = await axios.get(`/auth/login/google?code=${code}`);
@@ -41,16 +43,22 @@ export const useUserStore = create((set, get) => ({
       console.error("Google Login Error:", error);
     }
   },
-  login: async (email, password) => {
+  login: async (email, password, captchaToken) => {
     set({ loading: true });
     try {
-      const res = await axios.post("/auth/login", { email, password });
+      const res = await axios.post("/auth/login", {
+        email,
+        password,
+        captchaToken, // ✅ Send captcha token to backend
+      });
       set({ user: res.data, loading: false });
+      toast.success("Login successful!");
     } catch (error) {
       set({ loading: false });
-      toast.error(error.response.data.message || "An error occurred");
+      toast.error(error?.response?.data?.message || "An error occurred during login");
     }
   },
+
   sendCode: async (email) => {
     try {
       const res = await axios.post("/auth/send-code", { email });
