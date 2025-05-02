@@ -23,7 +23,7 @@ const SignUpPage = ({ userType = "user" }) => {
     password: "",
     confirmPassword: "",
     code: "",
-    role: userType, // 👈 include role in form data
+    role: userType,
   });
 
   const [sentCode, setSentCode] = useState(null);
@@ -37,12 +37,6 @@ const SignUpPage = ({ userType = "user" }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
     try {
       const token = await window.grecaptcha.execute("6LewqyErAAAAAJbiS2ByOtkI376mhlaF807odWLE", { action: "signup" });
 

@@ -40,9 +40,6 @@ const verifyCaptcha = async (captchaToken) => {
 
     const data = response.data;
 
-    // Log the full response for debugging (optional)
-    console.log("CAPTCHA verification result:", data);
-
     // For reCAPTCHA v3: check success and minimum score threshold (e.g., 0.5)
     return data.success && data.score >= 0.5;
   } catch (error) {

@@ -54,19 +54,29 @@ export const getFeaturedProducts = async (req, res) => {
   try {
     let featureProduct = await redis.get("feature_products");
     if (featureProduct) {
-      return res.json(JSON.parse(featureProduct));
+      return res.status(200).json({
+        source: "redis",
+        data: JSON.parse(featureProduct)
+      });
     }
-    featureProduct = await Product.find({ isFeatured: true }).lean(); //lean is used for return a JS object insert og MongoDB Object
-    if (!featureProduct) {
+
+    featureProduct = await Product.find({ isFeatured: true }).lean();
+    if (featureProduct.length === 0) {
       return res.status(404).json({ message: "No featured products found" });
     }
-    await redis.set("feature_products", JSON.stringify(featureProduct));
-    res.status(200).json(featureProduct);
+
+    await redis.set("feature_products", JSON.stringify(featureProduct), 'EX', 60 * 60 * 24 * 15); // 15 days TTL
+    res.status(200).json({
+      source: "mongodb",
+      data: featureProduct
+    });
   } catch (error) {
     console.log("Error in getFeaturedProducts", error.message);
-    res.status(500).json(error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
+
 // export const createProduct = async (req, res) => {
 //   try {
 //     const { name, description, price, image, category } = req.body;

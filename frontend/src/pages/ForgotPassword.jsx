@@ -37,7 +37,7 @@ const ForgetPasswordPage = () => {
     setSending(true); // Disable button
     try {
       await sendCodeForgot(form.email);
-      toast.success("Code sent to email");
+
       setStep(2);
       setTimer(60);
     } catch (error) {
@@ -58,7 +58,6 @@ const ForgetPasswordPage = () => {
     const code = form.codeDigits.join("");
     if (code.length !== 6) return toast.error("Enter all 6 digits");
     await verifyCode(form.email, code);
-    toast.success("Code verified");
     setStep(3);
   };
 

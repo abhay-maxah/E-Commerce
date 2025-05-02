@@ -22,7 +22,7 @@ export const useUserStore = create((set, get) => ({
         email,
         password,
         role,
-        captchaToken, // ✅ Send CAPTCHA token
+        captchaToken,
       });
 
       set({ user: res.data.user, loading: false });
@@ -72,7 +72,7 @@ export const useUserStore = create((set, get) => ({
   sendCodeForgot: async (email) => {
     try {
       const res = await axios.post("/auth/send-code-forgot", { email });
-      toast.success(res.data.message || "Code sent successfully");
+      toast.success(res.data.message || "Code sent successfully vai mail");
       return res.data.code;
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to send code");
