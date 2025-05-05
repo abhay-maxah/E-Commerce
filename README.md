@@ -1,89 +1,120 @@
-# MERN Stack Project
+#  CookiesMan – MERN Stack E-Commerce App
 
 ## Project Overview
 
-This is a MERN Stack (MongoDB, Express.js, React, Node.js) project that provides a full-stack e-commerce (**CookiesMan**) application. You can check the live version here: **CookiesMan**.
+**CookiesMan** is a full-featured e-commerce platform built using the **MERN Stack** (MongoDB, Express.js, React, Node.js). It offers a smooth shopping experience, secure authentication, premium subscriptions, coupon discounts, real-time cart updates, and PDF invoice generation.
 
-## Tech Stack
+🔗 **Live Demo**: [cookiesman.me](https://cookiesman.me)
 
-- **Frontend**: React, Zustand (State Management), TailwindCSS
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB
-- **Authentication**: JWT
-- **State Management**: Zustand
-- **API Structure**: RESTful
-- **Payment Gateway**: Stripe
-- **Caching**: Redis (for Best Selling products)
+---
 
-## Features
+## 🛠 Tech Stack
 
-### Project Features
-- **User Authentication**: Secure login and signup using JWT.
-- **Responsive Design**: Fully responsive UI for all devices.
-- **Dynamic Search**: Users can search for products dynamically.
-- **Category-Based Filtering**: Products are categorized for easy browsing.
-- **Coupon System**: Users can apply coupons for discounts.
-- **Cart Management**: Real-time cart updates and total calculations.
-- **Payment Gateway Integration**: Secure online payments for orders.
-- **Download PDF Invoice**: Users can download a PDF bill after purchase.
+* **Frontend**: React, Zustand, TailwindCSS
+* **Backend**: Node.js, Express.js
+* **Database**: MongoDB, Redis (`cookiesman-redis`)
+* **Authentication**: JWT, Google OAuth
+* **Bot Protection**: Google reCAPTCHA
+* **State Management**: Zustand
+* **API Type**: RESTful
+* **Payment Gateway**: Stripe (Products & 1-Year Premium Plan)
+* **Email Service**: Resend API
+* **PDF Generation**: PDFKit
+
+---
+
+## ✨ Features
+
+### 🧩 Core Features
+
+* Secure user **authentication (JWT)** and **Google login**
+* **Google reCAPTCHA** for bot protection
+* **Responsive design** for mobile, tablet, and desktop
+* **Dynamic product search**
+* **Category-based filtering** (Cookies, Chocolates)
+* **Real-time cart management**
+* **Coupon system** for discounts
+* **Secure payments via Stripe**
+* **Downloadable PDF invoice** post-purchase
+* **1-Year Premium Subscription** for exclusive benefits
+
+---
+
+## 🛒 Pages & Functionality
 
 ### 1. Landing Page
-- Displays two main product categories: **Cookies** and **Chocolates**.
-- Users can explore and select a category to view related products.
+
+* Showcases Cookies and Chocolates categories in a visually appealing layout.
+
+* Includes a hero banner with promotional offers and featured collections.
+
+* Highlights Best Selling Products section using Redis cache for performance.
+
+* Allows users to quickly navigate to product categories with call-to-action buttons.
+
+* Displays customer testimonials and reviews for social proof.
+
+* Contains a subscription prompt for users to join the 1-Year Premium Plan.
+
+* Offers a search bar to begin shopping instantly.
 
 ### 2. Product Listing Page
-- Shows a list of products based on the selected category.
-- Each product card includes **name, image, price, and an "Add to Cart" button**.
+
+* Displays products based on selected category.
+* Each card includes image, name, price, and **"Add to Cart"**.
 
 ### 3. Cart Management
-- Users can add products to their cart by clicking the **"Add to Cart" button**.
-- The cart updates dynamically, showing the total number of items.
-- Users can access the cart by clicking the cart icon in the navbar.
 
-### 4. Cart Page
-- Displays all added cart items along with their quantities and prices.
-- Shows a **summary section** on the right with the total amount of all items.
-- Includes an **"Apply Coupon"** section for discounts.
-- If a valid coupon is applied, the total amount updates accordingly.
+* Add/remove products dynamically.
+* Real-time total calculation and quantity updates.
+* **Apply Coupon** to get instant discounts.
 
-### 5. Checkout Process
-- Users can proceed to checkout after reviewing their cart.
-- Secure payment via **Stripe**.
-- Users can download an invoice as a **PDF** after purchase.
+### 4. Checkout Page
 
-## Folder Structure
+* Stripe payment integration.
+* Option to **subscribe to a 1-Year Premium Plan**.
+* **PDF invoice download** after successful purchase.
+
+---
+
+## 📁 Folder Structure
 
 ### Backend
+
 ```
 backend/
-│── Middleware/
-│── controllers/
-│── lib/
-│── models/
-│── routes/
-│── server.js
+│—— Middleware/
+│—— controllers/
+│—— lib/
+│—— models/
+│—— routes/
+│—— server.js
 ```
 
 ### Frontend
+
 ```
 frontend/
-│── public/
-│── src/
-│   ├── assets/
-│   ├── components/
-│   ├── lib/
-│   ├── pages/
-│   ├── stores/
-│   ├── App.css
-│   ├── App.jsx
-│   ├── index.css
-│   ├── main.js
+│—— public/
+│—— src/
+│   ├—— assets/
+│   ├—— components/
+│   ├—— lib/
+│   ├—— pages/
+│   ├—— stores/
+│   ├—— App.css
+│   ├—— App.jsx
+│   ├—— index.css
+│   └—— main.js
 ```
 
-## Installation & Setup
+---
+
+## ⚙️ Installation & Setup
 
 ### 1. Clone the Repository
-```sh
+
+```bash
 git clone https://github.com/abhay-maxah/E-Commerce.git
 cd E-Commerce
 ```
@@ -91,63 +122,96 @@ cd E-Commerce
 ### 2. Install Dependencies
 
 #### Backend
-```sh
+
+```bash
 npm install
 ```
 
 #### Frontend
-```sh
+
+```bash
 cd frontend
 npm install
 ```
 
-### 3. Environment Variables
-Create a `.env` file in both backend and frontend directories and configure necessary variables. Example for backend:
+### 3. Configure Environment Variables
+
+Create a `.env` file in both the **backend** and **frontend** directories.
+
+#### Backend `.env` Example
 
 ```
 PORT=5000
 MONGO_URI=your_mongo_uri
-UPSTASH_REDIS_URL=your_redis_url
+UPSTASH_REDIS_URL=your_redis_url  # Redis DB: cookiesman-redis
+
 ACCESS_TOKEN_SECRET=your_access_token_secret
 REFRESH_TOKEN_SECRET=your_refresh_token_secret
+
+# Cloudinary for image upload
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
+
+# Stripe payment (1-year subscription)
 STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_YEARLY_LINK=your_stripe_checkout_url
+STRIPE_PRICE_ID=your_stripe_price_id
+
 CLIENT_URL=http://localhost:5173
+
+# Google Auth & reCAPTCHA
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CAPTCH_SITE_KEY=your_site_key
+GOOGLE_CAPTCH_SECRET=your_captcha_secret
+
+# Email service
+RESEND_API_KEY=your_resend_api_key
+
 NODE_ENV=development
 ```
+
+---
 
 ### 4. Run the Project
 
 #### Backend
-```sh
+
+```bash
 nodemon start
 ```
 
 #### Frontend
-```sh
+
+```bash
 cd frontend
 npm run dev
 ```
 
-## API Documentation
+---
+
+## 🔌 API Endpoints
 
 **Base URL:** `http://localhost:5000/api`
 
-| Method | Endpoint     | Description           |
-| ------ | ------------ | --------------------- |
-| GET    | /products    | Fetch all products    |
-| POST   | /addItem     | Add product to cart   |
-| GET    | /cart        | Get all cart items    |
+| Method | Endpoint      | Description                |
+| ------ | ------------- | -------------------------- |
+| GET    | /products     | Fetch all products         |
+| POST   | /addItem      | Add product to cart        |
+| GET    | /cart         | Get all cart items         |
+| POST   | /subscribe    | Start yearly premium plan  |
+| POST   | /apply-coupon | Apply a coupon to the cart |
 
+---
 
-## Future Enhancements
-- **User Profile & Order History**
-- **Advanced Filters & Sorting**
-- **Wishlist Feature**
+## 📦 Future Enhancements
+
+* 🗒 User Profile & Order History
+* 📊 Advanced Filters & Sorting
+* ❤️ Wishlist Feature
+* 🔔 Email Notifications & Order Updates
+
+---
 
 ### 👨‍💻 Developed by **Abhay Parmar**
-
-
-
