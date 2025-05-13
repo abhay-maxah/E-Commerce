@@ -6,9 +6,16 @@ import CartItem from "../components/CartItem";
 import PeopleAlsoBought from "../components/PeopleAlsoBought";
 import OrderSummary from "../components/OrderSummary";
 import GiftCouponCard from "../components/GiftCouponCard";
+import { useUserStore } from "../stores/useUserStore";
 
 const CartPage = () => {
   const { cart } = useCartStore();
+  const { user } = useUserStore();
+  const navigate = useNavigate();
+
+  const handleBecomePremium = () => {
+    navigate("/premium");
+  };
 
   return (
     <div className="py-8 md:py-16">
@@ -20,6 +27,27 @@ const CartPage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
+            {user && !user.premium && cart.length > 0 && (
+              <div className="bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 p-5 rounded-lg shadow-sm mb-6 flex items-center gap-4">
+                <div className="text-yellow-500 text-4xl">⭐</div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-semibold text-yellow-800">
+                    Unlock Premium Benefits!
+                  </h4>
+                  <p className="text-sm text-yellow-700 mt-1">
+                    You're not a premium member. Delivery charges of ₹70 may apply. Upgrade to enjoy
+                    <strong> free delivery</strong>, <strong>exclusive deals</strong>, and more!
+                  </p>
+                </div>
+                <button
+                  onClick={handleBecomePremium}
+                  className="bg-[#A31621] hover:bg-red-800 text-white font-semibold px-4 py-2 rounded-md text-sm transition-all"
+                >
+                  Upgrade Now
+                </button>
+              </div>
+            )}
+
             {cart.length === 0 ? (
               <EmptyCartUI />
             ) : (
@@ -51,6 +79,7 @@ const CartPage = () => {
     </div>
   );
 };
+
 export default CartPage;
 
 const EmptyCartUI = () => {
@@ -70,10 +99,10 @@ const EmptyCartUI = () => {
       <ShoppingCart className="h-24 w-24 text-gray-300" />
       <h3 className="text-2xl font-semibold ">Your cart is empty</h3>
       <p className="text-gray-400">
-        Looks like you {"haven't"} added anything to your cart yet.
+        Looks like you haven't added anything to your cart yet.
       </p>
       <button
-        className="mt-4 rounded-md bg-transparent border border-[#A31621] hover:bg-[#A31621] hover:text-white px-6 py-2 "
+        className="mt-4 rounded-md bg-transparent border border-[#A31621] hover:bg-[#A31621] hover:text-white px-6 py-2"
         onClick={handleStartShopping}
       >
         Start Shopping

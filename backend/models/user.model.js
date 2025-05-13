@@ -47,9 +47,8 @@ const userSchema = new mongoose.Schema(
 );
 
 // Indexes
-userSchema.index({ email: 1 }, { unique: true });  // Email index with unique constraint
 userSchema.index({ name: 1 });  // Index on name
-userSchema.index({ role: 1 });  // Index on role
+
 
 // Pre-save hook for hashing password before saving to database
 userSchema.pre("save", async function (next) {

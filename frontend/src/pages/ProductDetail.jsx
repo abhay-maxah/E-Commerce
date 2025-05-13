@@ -77,7 +77,7 @@ const ProductDetail = () => {
     }
 
     if (!selectedAddress) {
-      toast.error("Please add an address before checkout.");
+      toast.error("Please add an address in your profile before checkout.");
       setIsDisabled(false);
       return;
     }
@@ -154,7 +154,6 @@ const ProductDetail = () => {
               <li>
                 We dispatch all products within 24-48 hours of placing the order.
               </li>
-
               <li>We ensure the best courier services for your orders.</li>
               <li>Proper packaging prevents in-transit damages.</li>
             </ul>
@@ -170,11 +169,25 @@ const ProductDetail = () => {
             <p className="text-gray-600">Baking City - 400001, Dessert Land</p>
             <p className="text-gray-600">Country of Origin: Cookie Kingdom</p>
           </div>
+
+          {/* Premium Suggestion CTA */}
           {user && !user.premium && (
-            <p className="text-sm text-red-600 font-medium mb-2">
-              Note: ₹70 delivery charge will apply. Become a premium user to get free delivery.
-            </p>
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md my-4">
+              <p className="font-medium">
+                You're not a premium member yet. Delivery charges of ₹70 apply.
+              </p>
+              <p>
+                <span>Want free delivery and exclusive deals? </span>
+                <button
+                  onClick={() => navigate("/premium")}
+                  className="text-[#A31621] underline font-semibold hover:text-red-800 transition duration-200"
+                >
+                  Become a Premium Member
+                </button>
+              </p>
+            </div>
           )}
+
           <div className="mt-6 flex flex-col sm:flex-row gap-4">
             <button
               className="flex-1 px-6 py-3 border border-[#A31621] text-[#A31621] font-semibold rounded-lg hover:bg-[#A31621] hover:text-white transition duration-300"

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+
 const AddressSelectionModal = ({ addresses, onClose, onSelect }) => {
   const handleSelect = (address) => {
     onSelect(address); // Pass selected address to OrderSummary
@@ -21,15 +22,28 @@ const AddressSelectionModal = ({ addresses, onClose, onSelect }) => {
             >
               <div>
                 <p className="font-medium">{address.houseName}</p>
-                <p className="text-sm text-gray-600">{address.streetAddress}, {address.city}</p>
-                <p className="text-sm text-gray-600">{address.state}, {address.zipCode}</p>
+                <p className="text-sm text-gray-600">
+                  {address.streetAddress}, {address.city}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {address.state}, {address.zipCode}
+                </p>
                 <p className="text-sm text-gray-600">{address.country}</p>
-                <p className="text-sm text-gray-600">Phone: {address.phoneNumber}</p>
+                <p className="text-sm text-gray-600">
+                  Phone: {address.phoneNumber}
+                </p>
               </div>
-              <span className="text-sm font-semibold">Select</span>
+              <span className="text-sm font-semibold text-[#A31621]">Select</span>
             </div>
           ))}
         </div>
+
+        {/* Informational Message */}
+        <p className="mt-4 text-sm text-gray-500 text-center">
+          Want to deliver to a different address? Please add it from your{" "}
+          <span className="text-[#A31621] font-medium">Profile</span>. Once added, it will appear here.
+        </p>
+
         <button
           className="mt-4 w-full py-2 border border-[#A31621] text-[#A31621] font-semibold rounded-lg hover:bg-[#A31621] hover:text-white transition duration-300"
           onClick={onClose}

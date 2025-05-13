@@ -85,7 +85,6 @@ const ForgetPasswordPage = () => {
     }
     try {
       await resetPassword(form.email, form.newPassword);
-      toast.success("Password reset successful");
       navigate("/login");
     } catch (err) {
       toast.error("Password reset failed");
@@ -121,7 +120,7 @@ const ForgetPasswordPage = () => {
             <button
               onClick={handleSendCode}
               disabled={sending}
-              className={`mt-4 w-full py-2 text-white rounded ${sending ? "bg-gray-400 cursor-not-allowed" : "bg-[#A31621] hover:bg-[#8f101a]"
+              className={`mt-4 w-full py-2 text-white rounded ${sending ? " cursor-not-allowed" : "bg-[#A31621] hover:bg-[#8f101a]"
                 }`}
             >
               {sending ? "Sending..." : "Send Code"}

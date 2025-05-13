@@ -19,6 +19,7 @@ import ErrorPage from "./pages/ErrorPage";
 import ProductDetail from "./pages/ProductDetail";
 import AllOrder from "./pages/AllOrder";
 import AddressForm from "./pages/AddressForm";
+import PlanCard from "./components/PlanCard";
 import UserProfile from "./pages/UserProfile";
 import ScrollToTop from "./components/ScrollToTop";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -87,6 +88,11 @@ function App() {
             <Route
               path="/cart"
               element={user ? <CartPage /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/premium"
+              element={user ? <PlanCard /> : <Navigate to="/login" />}
+
             />
             <Route
               path="/purchase-success"

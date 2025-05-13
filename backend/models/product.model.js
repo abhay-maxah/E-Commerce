@@ -34,7 +34,7 @@ const productSchema = new mongoose.Schema(
 // Indexes
 productSchema.index({ name: 1 }); // Index on name for fast search
 productSchema.index({ category: 1 }); // Index on category for filtering by category
-productSchema.index({ isFeatured: 1 }); // Index on isFeatured for filtering by featured status
+
 
 const Product = mongoose.model("Product", productSchema);
 export default Product;
