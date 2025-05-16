@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 const ForgetPasswordPage = () => {
   const { verifyCode, resetPassword, sendCodeForgot } = useUserStore();
-  const [step, setStep] = useState(3);
+  const [step, setStep] = useState(1);
   const [sending, setSending] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
