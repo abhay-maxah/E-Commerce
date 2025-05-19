@@ -82,8 +82,9 @@ const FeaturedProducts = ({ featuredProducts }) => {
                         {product.name}
                       </h3>
                       <p className="font-medium mb-4">
-                        Rs.{product.price.toFixed(2)}
+                        Rs.{typeof product.price === "number" ? product.price.toFixed(2) : "N/A"}
                       </p>
+
                       {user && (
                         <button
                           onClick={(e) => {

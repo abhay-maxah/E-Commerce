@@ -20,16 +20,40 @@ export const useProductStore = create((set) => ({
       toast.error(error.response.data.error);
       set({ loading: false });
     }
-  }, getAllProductsForSearch: async () => {
-    set({ loading: true });
+  },
+  //  getAllProductsForSearch: async () => {
+  //   set({ loading: true });
+  //   try {
+  //     const response = await axios.get("/products/search");
+  //     set({ products: response.data, loading: false });
+  //   } catch (error) {
+  //     set({ error: "Failed to fetch products", loading: false });
+  //     toast.error(error.response.data.error || "Failed to fetch products");
+  //   }
+  // },
+
+  getAllProductsForSearch: async (query = "") => {
+    set({ loading: true, error: null });
     try {
-      const response = await axios.get("/products/search");
+      let endpoint = "/products/search";
+      if (query && query.trim() !== "") {
+        endpoint = `/products/search?q=${encodeURIComponent(query.trim())}`;
+      } else {
+        if (!query || query.trim() === "") {
+          set({ products: [], loading: false });
+          return;
+        }
+      }
+
+      const response = await axios.get(endpoint);
       set({ products: response.data, loading: false });
     } catch (error) {
-      set({ error: "Failed to fetch products", loading: false });
-      toast.error(error.response.data.error || "Failed to fetch products");
+      const errorMessage = error.response?.data?.error || error.message || "Failed to fetch products";
+      set({ error: errorMessage, loading: false, products: [] });
+      toast.error(errorMessage);
     }
   },
+  clearSearch: () => set({ products: [], error: null, loading: false }),
   fetchAllProducts: async ({
     page = 1,
     limit = 10,
@@ -39,7 +63,7 @@ export const useProductStore = create((set) => ({
     set({ loading: true });
     try {
       const response = await axios.get("/products", {
-        params: { page, limit, sortBy, category }, // Send query params
+        params: { page, limit, sortBy, category }, 
       });
 
       set({
@@ -135,8 +159,8 @@ export const useProductStore = create((set) => ({
     try {
       const response = await axios.get("/products/featured");
       set({
-        products: response.data.data, // ⬅️ data field inside response
-        source: response.data.source, // ⬅️ new field
+        products: response.data.data,
+        source: response.data.source, 
         loading: false
       });
     } catch (error) {

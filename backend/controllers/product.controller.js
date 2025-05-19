@@ -3,12 +3,49 @@ import { redis } from "../lib/redis.js";
 import Product from "../models/product.model.js";
 import sharp from "sharp";
 import mongoose from "mongoose";
+// export const getAllProductsForSearch = async (req, res) => {
+//   try {
+//     const products = await Product.find({});
+//     res.status(200).json(products);
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// };
+
 export const getAllProductsForSearch = async (req, res) => {
   try {
-    const products = await Product.find({});
+    const searchQuery = req.query.q;
+    let products;
+
+    const queryFields = {
+      _id: 1, // Essential for keys
+      name: 1,
+      image: 1, // <<<< Make sure you have this field in your schema and select it
+      // Add any other fields needed for the product link or display
+    };
+
+    if (searchQuery && searchQuery.trim() !== "") {
+      products = await Product.find(
+        {
+          $or: [
+            { name: { $regex: searchQuery.trim(), $options: "i" } },
+            // { description: { $regex: searchQuery.trim(), $options: "i" } }, // If you search in description too
+          ],
+        },
+        queryFields // Select only necessary fields
+      ).limit(10); // Example limit for suggestions
+    } else {
+      // If no search query, and this endpoint is ONLY for search suggestions,
+      // you might want to return an empty array.
+      // If it can also serve all products, then fetch all, but still select fields.
+      // products = await Product.find({}, queryFields).limit(10); // Example
+      products = []; // For a dedicated search suggestion endpoint, return empty if no query
+    }
+
     res.status(200).json(products);
   } catch (error) {
-    res.status(500).json(error);
+    console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Error fetching products", error: error.message });
   }
 };
 export const getAllProducts = async (req, res) => {
