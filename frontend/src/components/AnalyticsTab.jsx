@@ -1,7 +1,12 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import axios from "../lib/axios";
-import { Users, Package, ShoppingCart, IndianRupee } from "lucide-react";
+import {
+  Users,
+  Package,
+  ShoppingCart,
+  IndianRupee,
+} from "lucide-react";
 import LoadingSpinner from "./LoadingSpinner";
 import UserList from "./AnalyticsTab/UserList";
 import ProductsList from "./ProductsList";
@@ -16,6 +21,12 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+
+const formatDateLabel = (dateStr) => {
+  const date = new Date(dateStr);
+  const options = { month: "short", day: "numeric" }; // e.g. May 20
+  return date.toLocaleDateString("en-US", options);
+};
 
 const AnalyticsTab = () => {
   const [analyticsData, setAnalyticsData] = useState({
@@ -32,8 +43,16 @@ const AnalyticsTab = () => {
     const fetchAnalyticsData = async () => {
       try {
         const response = await axios.get("/analytics");
+
+        const last7Days = response.data.dailySalesData
+          .slice(-7)
+          .map((item) => ({
+            ...item,
+            date: formatDateLabel(item.date), // Convert to "May 20"
+          }));
+
         setAnalyticsData(response.data.analyticsData);
-        setDailySalesData(response.data.dailySalesData);
+        setDailySalesData(last7Days);
       } catch (error) {
         console.error("Error fetching analytics data:", error);
       } finally {
@@ -44,10 +63,8 @@ const AnalyticsTab = () => {
     fetchAnalyticsData();
   }, []);
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-  const user = analyticsData.users - 1;
+  if (isLoading) return <LoadingSpinner />;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -80,6 +97,7 @@ const AnalyticsTab = () => {
           onClick={() => setSelectedTab("graph")}
         />
       </div>
+
       {selectedTab === "graph" ? (
         <motion.div
           className="bg-gradient-to-br from-red-200 to-red-100 opacity-90 rounded-lg p-6 shadow-xl"
@@ -90,11 +108,14 @@ const AnalyticsTab = () => {
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={dailySalesData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#92969c" />
-              <XAxis dataKey="name" stroke="#92969c" />
+              <XAxis dataKey="date" stroke="#92969c" />
               <YAxis yAxisId="left" stroke="#92969c" />
               <YAxis yAxisId="right" orientation="right" stroke="#92969c" />
               <Tooltip
-                contentStyle={{ backgroundColor: "#FFEBEE", color: "#A31621" }}
+                contentStyle={{
+                  backgroundColor: "#FFEBEE",
+                  color: "#A31621",
+                }}
               />
               <Legend />
               <Line
@@ -128,6 +149,7 @@ const AnalyticsTab = () => {
     </div>
   );
 };
+
 export default AnalyticsTab;
 
 const AnalyticsCard = ({ title, value, icon: Icon, color, onClick }) => (

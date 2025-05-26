@@ -89,7 +89,7 @@ export const signup = async (req, res) => {
         name: user.name,
         email: user.email,
         _id: user._id,
-        role: user.role, // will reflect 'admin' or 'user'
+        role: user.role,
       },
       message: "User created successfully",
     });

@@ -58,10 +58,9 @@ export const useAddressStore = create((set) => ({
       set((state) => ({
         addresses: state.addresses.map((addr) =>
           addr.id === id ? res.data : addr
-        ), // ✅ Update existing address
+        ), 
         loading: false,
       }));
-      toast.success("Address updated successfully");
     } catch (error) {
       set({ loading: false });
       toast.error(error.response?.data?.message || "An error occurred");

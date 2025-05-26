@@ -19,7 +19,7 @@ export default function HeroCard() {
       {/* Content */}
       <div className="relative z-10 top-3 text-white flex flex-col items-center">
         <h1 className="text-3xl md:text-5xl font-bold mb-6">
-          Cozy up with our new cookies collection
+          "Cookies with a Crush – Fall for Every Flavor, Every Bite!"
         </h1>
         <Link
           to="/category/Cookies"

@@ -5,9 +5,6 @@ import { toast } from "react-hot-toast";
 export const useOrderStore = create((set, get) => ({
   orders: [],
   loading: false,
-
-
-
   fetchOrdersForUser: async (userId) => {
     if (!userId) return toast.error("User ID is required");
 

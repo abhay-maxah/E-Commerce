@@ -6,6 +6,7 @@ export const useProductStore = create((set) => ({
   products: [],
   source: "",
   loading: false,
+  isFeaturedFetched: false,
 
   setProducts: (products) => set({ products }),
   createProduct: async (productData) => {
@@ -21,16 +22,6 @@ export const useProductStore = create((set) => ({
       set({ loading: false });
     }
   },
-  //  getAllProductsForSearch: async () => {
-  //   set({ loading: true });
-  //   try {
-  //     const response = await axios.get("/products/search");
-  //     set({ products: response.data, loading: false });
-  //   } catch (error) {
-  //     set({ error: "Failed to fetch products", loading: false });
-  //     toast.error(error.response.data.error || "Failed to fetch products");
-  //   }
-  // },
 
   getAllProductsForSearch: async (query = "") => {
     set({ loading: true, error: null });
@@ -77,19 +68,6 @@ export const useProductStore = create((set) => ({
     }
   },
 
-  // fetchProductsByCategory: async (category) => {
-  //   set({ isLoading: true, products: [] }); // Clear products before fetching
-
-  //   try {
-  //     const response = await axios.get(`/products/category/${category}`);
-  //     set({ products: response.data, isLoading: false });
-  //   } catch (error) {
-  //     const errorMessage =
-  //       error.response?.data?.error || "Failed to fetch products";
-  //     set({ error: errorMessage, isLoading: false });
-  //     toast.error(errorMessage);
-  //   }
-  // },
   fetchProductsByCategory: async (
     category,
     sortBy = "newest",
@@ -145,7 +123,11 @@ export const useProductStore = create((set) => ({
             ? { ...product, isFeatured: updatedProduct.isFeatured }
             : product
         );
-        return { products: updatedProducts, loading: false };
+        return {
+          products: updatedProducts,
+          loading: false,
+          isFeaturedFetched: false,
+        };
       });
     } catch (error) {
       set({ loading: false });
@@ -153,15 +135,18 @@ export const useProductStore = create((set) => ({
     }
   },
 
-
   fetchFeaturedProducts: async () => {
+    const state = useProductStore.getState();
+
+    if (state.isFeaturedFetched) return;
     set({ loading: true });
     try {
       const response = await axios.get("/products/featured");
       set({
         products: response.data.data,
         source: response.data.source, 
-        loading: false
+        loading: false,
+        isFeaturedFetched: true,
       });
     } catch (error) {
       set({ error: "Failed to fetch products", loading: false });

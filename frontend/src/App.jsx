@@ -24,11 +24,15 @@ import UserProfile from "./pages/UserProfile";
 import ScrollToTop from "./components/ScrollToTop";
 import ForgotPassword from "./pages/ForgotPassword";
 import usePageTitle from "./hooks/usePageTitle";
-// 🔐 Wrapper for Google login
 const GoogleAuthWrapper = () => {
+  const location = useLocation();
+  const path = location.pathname;
+
   return (
     <GoogleOAuthProvider clientId="809832986226-q5uuk1ai9u0onglu7jm43s8akhkt3761.apps.googleusercontent.com">
-      <LoginPage />
+      {path === "/login" && <LoginPage />}
+      {path === "/signup" && <SignUpPage userType="user" />}
+      {path === "/admin" && <SignUpPage userType="admin" />}
     </GoogleOAuthProvider>
   );
 };
@@ -62,11 +66,11 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route
               path="/signup"
-              element={!user ? <SignUpPage userType="user" /> : <Navigate to="/" />}
+              element={!user ? <GoogleAuthWrapper /> : <Navigate to="/" />}
             />
             <Route
-              path="/secret-signup"
-              element={!user ? <SignUpPage userType="admin" /> : <Navigate to="/" />}
+              path="/admin"
+              element={!user ? <GoogleAuthWrapper /> : <Navigate to="/" />}
             />
             <Route
               path="/login"

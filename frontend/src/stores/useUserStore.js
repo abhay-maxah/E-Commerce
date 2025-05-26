@@ -8,13 +8,13 @@ export const useUserStore = create((set, get) => ({
   setUser: (user) => set({ user }),
 
 
-  signup: async ({ name, email, password, confirmPassword, role = "user", captchaToken }) => {
+  signup: async ({ name, email, password, role = "user", captchaToken }) => {
     set({ loading: true });
 
-    if (password !== confirmPassword) {
-      set({ loading: false });
-      return toast.error("Passwords do not match");
-    }
+    // if (password !== confirmPassword) {
+    //   set({ loading: false });
+    //   return toast.error("Passwords do not match");
+    // }
 
     try {
       const res = await axios.post("/auth/signup", {
