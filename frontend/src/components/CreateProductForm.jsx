@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Upload, Loader, PlusCircle, XCircle } from "lucide-react";
+import { Upload, Loader, PlusCircle, XCircle, Trash2 } from "lucide-react";
 import { useProductStore } from "../stores/useProductStore";
+import { toast } from "react-hot-toast";
 
 const categories = ["Cookies", "Chocolates"];
 
-const CreateProductForm = ({ productToEdit, closeModal }) => {
+const CreateProductForm = ({ productToEdit, closeModal = () => { } }) => {
   const [product, setProduct] = useState({
     name: "",
     description: "",
+    pricing: [{ weight: "", price: "" }],
     price: "",
     category: "",
-    image: "",
+    images: [],
   });
 
   const { createProduct, updateProduct, loading } = useProductStore();
@@ -21,9 +23,10 @@ const CreateProductForm = ({ productToEdit, closeModal }) => {
       setProduct({
         name: productToEdit.name || "",
         description: productToEdit.description || "",
+        pricing: productToEdit.pricing || [{ weight: "", price: "" }],
         price: productToEdit.price || "",
         category: productToEdit.category || "",
-        image: productToEdit.image || "",
+        images: productToEdit.images || [],
       });
     }
   }, [productToEdit]);
@@ -31,37 +34,90 @@ const CreateProductForm = ({ productToEdit, closeModal }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validation
+    if (!product.images.length) {
+      toast.error("Please upload at least one image.");
+      return;
+    }
+
+    if (product.category === "Chocolates" && !product.price) {
+      toast.error("Please enter a price for Chocolates.");
+      return;
+    }
+
     try {
+      const payload =
+        product.category === "Cookies"
+          ? product
+          : {
+            ...product,
+            pricing: [{ weight: "", price: product.price }],
+          };
+
       if (productToEdit) {
-        await updateProduct(productToEdit._id, product);
+        await updateProduct(productToEdit._id, payload);
       } else {
-        await createProduct(product);
+        await createProduct(payload);
       }
 
-      // Clear form fields after successful submission
       setProduct({
         name: "",
         description: "",
+        pricing: [{ weight: "", price: "" }],
         price: "",
         category: "",
-        image: "",
+        images: [],
       });
 
-      closeModal();
-    } catch {
-      console.log("Error submitting the product");
+      // Only call closeModal if it's a function
+      if (typeof closeModal === "function") {
+        closeModal();
+      }
+    } catch (err) {
+      console.log("Error submitting the product", err);
     }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProduct({ ...product, image: reader.result });
-      };
-      reader.readAsDataURL(file);
+  const handleImageChange = async (e) => {
+    const files = Array.from(e.target.files);
+
+    const readFile = (file) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.readAsDataURL(file);
+      });
+
+    try {
+      const imagesData = await Promise.all(files.map(readFile));
+      setProduct((prev) => ({
+        ...prev,
+        images: [...prev.images, ...imagesData],
+      }));
+    } catch (error) {
+      console.error("Error reading files", error);
     }
+  };
+
+  const handlePricingChange = (index, field, value) => {
+    const updatedPricing = [...product.pricing];
+    updatedPricing[index][field] = value;
+    setProduct({ ...product, pricing: updatedPricing });
+  };
+
+  const addPricing = () => {
+    setProduct({ ...product, pricing: [...product.pricing, { weight: "", price: "" }] });
+  };
+
+  const removePricing = (index) => {
+    const updatedPricing = product.pricing.filter((_, i) => i !== index);
+    setProduct({ ...product, pricing: updatedPricing });
+  };
+
+  const removeImage = (index) => {
+    const updatedImages = product.images.filter((_, i) => i !== index);
+    setProduct({ ...product, images: updatedImages });
   };
 
   return (
@@ -71,75 +127,54 @@ const CreateProductForm = ({ productToEdit, closeModal }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
     >
-      {/* Close Modal Button */}
+      {/* Close Button */}
       {productToEdit && (
         <button
-          onClick={closeModal}
+          onClick={() => {
+            if (typeof closeModal === "function") closeModal();
+          }}
           className="absolute top-4 right-4 text-red-500 hover:text-red-700 transition"
         >
           <XCircle className="h-6 w-6" />
         </button>
       )}
+
       <h2 className="text-2xl font-semibold mb-6 text-[#A31621] text-center">
         {productToEdit ? "Update Product" : "Create New Product"}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Product Name */}
+        {/* Name */}
         <div>
-          <label className="block text-sm font-medium text-[#A31621]">
-            Product Name
-          </label>
+          <label className="block text-sm font-medium text-[#A31621]">Product Name</label>
           <input
             type="text"
             value={product.name}
             onChange={(e) => setProduct({ ...product, name: e.target.value })}
-            className="mt-1 block w-full border border-red-300 rounded-md py-2 px-3 focus:ring-red-400 focus:outline-none"
+            className="mt-1 block w-full border border-red-300 rounded-md py-2 px-3 focus:outline-none"
             required
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-[#A31621]">
-            Description
-          </label>
+          <label className="block text-sm font-medium text-[#A31621]">Description</label>
           <textarea
             value={product.description}
-            onChange={(e) =>
-              setProduct({ ...product, description: e.target.value })
-            }
+            onChange={(e) => setProduct({ ...product, description: e.target.value })}
             rows="3"
-            className="mt-1 block w-full border border-red-300 rounded-md py-2 px-3 focus:ring-red-400 focus:outline-none"
-            required
-          />
-        </div>
-
-        {/* Price */}
-        <div>
-          <label className="block text-sm font-medium text-[#A31621]">
-            Price
-          </label>
-          <input
-            type="number"
-            value={product.price}
-            onChange={(e) => setProduct({ ...product, price: e.target.value })}
-            className="mt-1 block w-full border border-red-300 rounded-md py-2 px-3 focus:ring-red-400 focus:outline-none"
+            className="mt-1 block w-full border border-red-300 rounded-md py-2 px-3 focus:outline-none"
             required
           />
         </div>
 
         {/* Category */}
         <div>
-          <label className="block text-sm font-medium text-[#A31621]">
-            Category
-          </label>
+          <label className="block text-sm font-medium text-[#A31621]">Category</label>
           <select
             value={product.category}
-            onChange={(e) =>
-              setProduct({ ...product, category: e.target.value })
-            }
-            className="mt-1 block w-full border border-red-300 rounded-md py-2 px-3 focus:ring-red-400"
+            onChange={(e) => setProduct({ ...product, category: e.target.value })}
+            className="mt-1 block w-full border border-red-300 rounded-md py-2 px-3 focus:outline-none"
             required
           >
             <option value="">Select a category</option>
@@ -151,32 +186,106 @@ const CreateProductForm = ({ productToEdit, closeModal }) => {
           </select>
         </div>
 
-        {/* Image Upload */}
-        <div className="mt-1 flex items-center gap-4">
+        {/* Pricing - Cookies */}
+        {product.category === "Cookies" && (
+          <div>
+            <label className="block text-sm font-medium text-[#A31621] mb-1">
+              Pricing (Weight & Price)
+            </label>
+            {product.pricing.map((item, index) => (
+              <div key={index} className="flex gap-2 mb-2 items-center">
+                <input
+                  type="text"
+                  placeholder="Weight (e.g., 250g)"
+                  value={item.weight}
+                  onChange={(e) => handlePricingChange(index, "weight", e.target.value)}
+                  className="flex-1 border border-red-300 rounded-md py-2 px-3 focus:outline-none"
+                  required
+                />
+                <input
+                  type="number"
+                  placeholder="Price"
+                  value={item.price}
+                  onChange={(e) => handlePricingChange(index, "price", e.target.value)}
+                  className="flex-1 border border-red-300 rounded-md py-2 px-3 focus:outline-none"
+                  required
+                />
+                {product.pricing.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removePricing(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addPricing}
+              className="text-sm text-[#A31621] mt-1 hover:underline"
+            >
+              + Add more weight/price
+            </button>
+          </div>
+        )}
+
+        {/* Price - Chocolates */}
+        {product.category === "Chocolates" && (
+          <div>
+            <label className="block text-sm font-medium text-[#A31621]">Price (₹)</label>
+            <input
+              type="number"
+              value={product.price}
+              onChange={(e) => setProduct({ ...product, price: e.target.value })}
+              className="mt-1 block w-full border border-red-300 rounded-md py-2 px-3 focus:outline-none"
+              required
+            />
+          </div>
+        )}
+
+        {/* Images Upload */}
+        <div className="mt-2">
+          <label className="block text-sm font-medium text-[#A31621] mb-1">Upload Images</label>
           <input
             type="file"
             id="image"
-            className="sr-only"
+            className="hidden"
             accept="image/*"
+            multiple
             onChange={handleImageChange}
           />
           <label
             htmlFor="image"
-            className="cursor-pointer py-2 px-3 border border-red-400 rounded-md text-sm font-medium hover:bg-red-500 hover:text-white transition flex items-center"
+            className="cursor-pointer py-2 px-3 border border-red-400 rounded-md text-sm font-medium hover:bg-red-500 hover:text-white transition flex items-center w-fit"
           >
             <Upload className="h-5 w-5 mr-2" />
-            Upload Image
+            Upload Images
           </label>
-          {product.image && (
-            <img
-              src={product.image}
-              alt="Product"
-              className="h-12 w-12 object-cover rounded-md border"
-            />
-          )}
+
+          {/* Image Preview */}
+          <div className="flex flex-wrap gap-2 mt-2">
+            {product.images.map((img, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={img}
+                  alt={`Product ${index + 1}`}
+                  className="h-16 w-16 object-cover rounded-md border"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute -top-2 -right-2 bg-white rounded-full p-1 text-red-500 hover:text-red-700 shadow"
+                >
+                  <XCircle className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Submit Button  */}
+        {/* Submit */}
         <button
           type="submit"
           className={`w-full flex items-center justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium 
@@ -186,10 +295,7 @@ const CreateProductForm = ({ productToEdit, closeModal }) => {
         >
           {loading ? (
             <>
-              <Loader
-                className="mr-2 h-5 w-5 animate-spin"
-                aria-hidden="true"
-              />
+              <Loader className="mr-2 h-5 w-5 animate-spin" />
               Loading...
             </>
           ) : (

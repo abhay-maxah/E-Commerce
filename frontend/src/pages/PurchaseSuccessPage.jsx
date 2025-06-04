@@ -1,17 +1,19 @@
 import { ArrowRight, CheckCircle, HandHeart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useCartStore } from "../stores/useCartStore";
+import { useCartStore } from "../stores/useCartStore"; // Make sure this path is correct
 import { useUserStore } from "../stores/useUserStore";
 import axios from "../lib/axios";
 import Confetti from "react-confetti";
+import PaymentErrorPage from "./PaymentErrorPage"; // Make sure this path is correct
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const PurchaseSuccessPage = () => {
   const [isProcessing, setIsProcessing] = useState(true);
   const [error, setError] = useState(null);
   const [type, setType] = useState(null); // "order" or "subscription"
   const [orderId, setOrderId] = useState(null);
-  const { clearCart } = useCartStore();
+  const { clearCart } = useCartStore(); // Correctly destructure clearCart
   const { user, setUser } = useUserStore(); // setUser to update premium status
 
   useEffect(() => {
@@ -21,8 +23,15 @@ const PurchaseSuccessPage = () => {
           sessionId,
         });
 
+        // Get the 'source' query parameter from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const source = urlParams.get("source"); // This is crucial for conditional clearing
+
         if (response.data.type === "order") {
-          clearCart();
+
+          if (source === "cart") {
+            clearCart();
+          }
           setOrderId(response.data.orderId);
         }
 
@@ -31,9 +40,9 @@ const PurchaseSuccessPage = () => {
         }
 
         setType(response.data.type);
-      } catch (error) {
-        console.log("Checkout error", error);
-        setError("Something went wrong during checkout.");
+        setError(null); // Clear any previous errors on success
+      } catch (err) {
+        setError(err.response?.data?.message || "An unexpected error occurred after payment. Please check your orders shortly or contact support.");
       } finally {
         setIsProcessing(false);
       }
@@ -45,16 +54,26 @@ const PurchaseSuccessPage = () => {
     if (sessionId) {
       handleCheckoutSuccess(sessionId);
     } else {
-      setError("No session ID found in the URL");
+      setError("No session ID found in the URL. Payment verification failed.");
       setIsProcessing(false);
     }
-  }, [clearCart, setUser]);
+  }, [clearCart, setUser]); // Add clearCart to dependency array for useEffect
 
   const isPremium = user?.premium === true;
 
-  if (isProcessing) return "Processing...";
-  if (error) return `Error: ${error}`;
+  if (isProcessing) {
+    return (
+      <LoadingSpinner />
+    );
+  }
 
+  // If there's an error, render the PaymentErrorPage
+  if (error) {
+    // Pass the error message to the PaymentErrorPage if it accepts it as a prop
+    return <PaymentErrorPage errorMessage={error} />;
+  }
+
+  // Otherwise, render the success page
   return (
     <div className="h-screen flex items-center justify-center px-4">
       <Confetti

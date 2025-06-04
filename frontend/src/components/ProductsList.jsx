@@ -3,26 +3,36 @@ import { motion } from "framer-motion";
 import { useProductStore } from "../stores/useProductStore";
 import LoadingSpinner from "./LoadingSpinner";
 import Pagination from "./Pagination";
-import ProductForm from "./CreateProductForm";
+import ProductForm from "./CreateProductForm"; // Assuming this is your form component
 import { Trash, Star, Pencil } from "lucide-react";
 
-// 👇 Memoized ProductRow Component
+// Memoized ProductRow Component for performance optimization
 const ProductRow = React.memo(({ product, index, onEdit, onDelete, onToggleFeatured }) => {
+  // Determine the image source: use the first image if available, otherwise an empty string
+  const imgSrc = product.images && product.images.length > 0 ? product.images[0] : '';
+
   return (
     <tr className="hover:bg-red-50">
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
         {index + 1}
       </td>
       <td className="px-6 py-4 whitespace-nowrap flex items-center gap-3">
-        <img
-          className="h-10 w-10 rounded-full object-cover"
-          src={product.image}
-          alt={product.name}
-        />
+        {imgSrc && ( // Only render img tag if imgSrc is not empty
+          <img
+            className="h-10 w-10 rounded-full object-cover"
+            src={imgSrc}
+            alt={product.name}
+          />
+        )}
         <span className="text-sm font-medium">{product.name}</span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
-        {Number(product.price || 0).toFixed(2)}
+        {/* Iterate over pricing array to display all prices and weights */}
+        {product.pricing.map((priceOption, idx) => (
+          <div key={idx}>
+            {priceOption.weight !== "default" ? `${priceOption.weight}: ` : ''}₹{Number(priceOption.price).toFixed(2)}
+          </div>
+        ))}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm">{product.category}</td>
       <td className="px-6 py-4 whitespace-nowrap">
@@ -32,6 +42,7 @@ const ProductRow = React.memo(({ product, index, onEdit, onDelete, onToggleFeatu
             ? "bg-red-500 text-white"
             : "bg-gray-200 text-gray-900"
             } hover:bg-red-500 transition-colors duration-200`}
+          aria-label={product.isFeatured ? "Unmark as featured" : "Mark as featured"}
         >
           <Star className="h-5 w-5" />
         </button>
@@ -40,12 +51,14 @@ const ProductRow = React.memo(({ product, index, onEdit, onDelete, onToggleFeatu
         <button
           onClick={() => onEdit(product)}
           className="text-red-500 hover:text-[#A31621]"
+          aria-label={`Edit ${product.name}`}
         >
           <Pencil className="h-5 w-5" />
         </button>
         <button
           onClick={() => onDelete(product._id)}
           className="text-red-500 hover:text-[#A31621]"
+          aria-label={`Delete ${product.name}`}
         >
           <Trash className="h-5 w-5" />
         </button>
@@ -69,7 +82,7 @@ const ProductsList = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [editingProduct, setEditingProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
+  const [isAdding, setIsAdding] = useState(false); // State to differentiate between add/edit for modal close
 
   useEffect(() => {
     fetchAllProducts({
@@ -77,34 +90,37 @@ const ProductsList = () => {
       sortBy: sortOption,
       category: categoryFilter,
     });
-  }, [currentPage, sortOption, categoryFilter]);
+  }, [currentPage, sortOption, categoryFilter, fetchAllProducts]); // Add fetchAllProducts to dependency array
 
   const handleSortChange = (e) => {
     setSortOption(e.target.value);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on sort change
   };
 
   const handleCategoryChange = (e) => {
     setCategoryFilter(e.target.value);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on category change
   };
 
   const openEditModal = (product) => {
     setEditingProduct(product);
-    setIsAdding(false);
+    setIsAdding(false); // Not adding, but editing
     setIsModalOpen(true);
   };
 
   const handleProductUpdate = () => {
     setIsModalOpen(false);
-    fetchAllProducts({ page: currentPage, sortBy: sortOption });
+    setEditingProduct(null); // Clear editing product after update
+    fetchAllProducts({ page: currentPage, sortBy: sortOption, category: categoryFilter }); // Re-fetch current page with filters
   };
 
   const handleProductAdded = () => {
     setIsModalOpen(false);
-    setCurrentPage(1);
-    setSortOption("newest");
-    fetchAllProducts({ page: 1, sortBy: "newest" });
+    setEditingProduct(null); // Clear editing product after add
+    setCurrentPage(1); // Go to the first page to see the new product
+    setSortOption("newest"); // Sort by newest to easily find the new product
+    setCategoryFilter("all"); // Clear category filter to ensure new product is visible
+    fetchAllProducts({ page: 1, sortBy: "newest", category: "all" }); // Re-fetch with default sorting and filter
   };
 
   return (
@@ -117,25 +133,26 @@ const ProductsList = () => {
       <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4">
         <h2 className="text-lg font-semibold text-[#A31621]">Product List</h2>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-          <label className="text-[#A31621] font-medium text-sm sm:text-base">
-            Filter by:
+          <label htmlFor="sort-by" className="text-[#A31621] font-medium text-sm sm:text-base">
+            Sort by:
           </label>
           <select
+            id="sort-by"
             className="border border-[#A31621] p-2 rounded-lg text-[#A31621] bg-transparent focus:outline-none cursor-pointer transition w-full sm:w-auto"
             value={sortOption}
             onChange={handleSortChange}
           >
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
-            <option value="price_high_low">Price: High to Low</option>
-            <option value="price_low_high">Price: Low to High</option>
+
           </select>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-          <label className="text-[#A31621] font-medium text-sm sm:text-base">
+          <label htmlFor="category-filter" className="text-[#A31621] font-medium text-sm sm:text-base">
             Category:
           </label>
           <select
+            id="category-filter"
             className="border border-[#A31621] p-2 rounded-lg text-[#A31621] bg-transparent focus:outline-none cursor-pointer transition w-full sm:w-auto"
             value={categoryFilter}
             onChange={handleCategoryChange}
@@ -145,6 +162,7 @@ const ProductsList = () => {
             <option value="Chocolates">Chocolates</option>
           </select>
         </div>
+
       </div>
 
       {loading ? (
@@ -189,7 +207,7 @@ const ProductsList = () => {
               ) : (
                 <tr>
                   <td colSpan="6" className="text-center py-4 text-[#A31621]">
-                    No products found
+                        No products found.
                   </td>
                 </tr>
               )}
@@ -205,7 +223,7 @@ const ProductsList = () => {
       />
 
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 sm:p-6">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 sm:p-6 z-50"> {/* Added z-50 for modal */}
           <div className="bg-white w-full sm:w-[90vw] md:w-[70vw] lg:w-[50vw] xl:w-[40vw] max-h-[90vh] overflow-y-auto p-6 rounded-md shadow-lg lg:mt-10 lg:max-w-[600px]">
             <ProductForm
               productToEdit={editingProduct}

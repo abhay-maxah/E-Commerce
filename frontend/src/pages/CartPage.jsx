@@ -7,12 +7,12 @@ import PeopleAlsoBought from "../components/PeopleAlsoBought";
 import OrderSummary from "../components/OrderSummary";
 import GiftCouponCard from "../components/GiftCouponCard";
 import { useUserStore } from "../stores/useUserStore";
-
+import { useState } from "react";
 const CartPage = () => {
+  const [showPremiumBanner, setShowPremiumBanner] = useState(true);
   const { cart } = useCartStore();
   const { user } = useUserStore();
   const navigate = useNavigate();
-
   const handleBecomePremium = () => {
     navigate("/premium");
   };
@@ -27,8 +27,8 @@ const CartPage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            {user && !user.premium && cart.length > 0 && (
-              <div className="bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 p-5 rounded-lg shadow-sm mb-6 flex items-center gap-4">
+            {user && !user.premium && cart.length > 0 && showPremiumBanner && (
+              <div className="bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-300 p-5 rounded-lg shadow-sm mb-6 flex items-start gap-4 relative">
                 <div className="text-yellow-500 text-4xl">⭐</div>
                 <div className="flex-1">
                   <h4 className="text-lg font-semibold text-yellow-800">
@@ -41,12 +41,20 @@ const CartPage = () => {
                 </div>
                 <button
                   onClick={handleBecomePremium}
-                  className="bg-[#A31621] hover:bg-red-800 text-white font-semibold px-4 py-2 rounded-md text-sm transition-all"
+                  className="bg-[#A31621] hover:bg-red-800 text-white font-semibold px-4 py-2 mt-5 rounded-md text-sm transition-all"
                 >
                   Upgrade Now
                 </button>
+                <button
+                  onClick={() => setShowPremiumBanner(false)}
+                  className="absolute top-2 right-2 text-yellow-600 hover:text-yellow-800 text-lg font-bold"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
               </div>
             )}
+
 
             {cart.length === 0 ? (
               <EmptyCartUI />
@@ -55,9 +63,12 @@ const CartPage = () => {
                 <h3 className="text-2xl font-semibold text-[#A31621] mb-4">
                   Cart Items
                 </h3>
-                {cart.map((item) => (
-                  <CartItem key={item._id} item={item} />
-                ))}
+                  {cart.map((item, idx) => {
+                    const selectedPrice = item.selectedPrice ?? 'noPrice';
+                    const selectedWeight = item.selectedWeight ?? 'noWeight';
+                    const key = `${item._id}-${selectedPrice}-${selectedWeight}-${idx}`;
+                    return <CartItem key={key} item={item} />;
+                  })}
               </div>
             )}
             {cart.length > 0 && <PeopleAlsoBought />}

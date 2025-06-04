@@ -4,9 +4,9 @@ import axios from "../lib/axios";
 
 export const useProductStore = create((set) => ({
   products: [],
+  searchProducts: [],
   source: "",
   loading: false,
-  isFeaturedFetched: false,
 
   setProducts: (products) => set({ products }),
   createProduct: async (productData) => {
@@ -17,6 +17,7 @@ export const useProductStore = create((set) => ({
         products: [...prevState.products, res.data],
         loading: false,
       }));
+      toast.success("Product created successfully");
     } catch (error) {
       toast.error(error.response.data.error);
       set({ loading: false });
@@ -31,20 +32,26 @@ export const useProductStore = create((set) => ({
         endpoint = `/products/search?q=${encodeURIComponent(query.trim())}`;
       } else {
         if (!query || query.trim() === "") {
-          set({ products: [], loading: false });
+          set({ searchProducts: [], loading: false });
           return;
         }
       }
-
       const response = await axios.get(endpoint);
-      set({ products: response.data, loading: false });
+      // Map over products to explicitly set firstImage property or flatten images
+      const processedProducts = response.data.map(product => ({
+        ...product,
+        firstImage: product.images && product.images.length > 0 ? product.images[0] : null,
+      }));
+
+      set({ searchProducts: processedProducts, loading: false });
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.message || "Failed to fetch products";
-      set({ error: errorMessage, loading: false, products: [] });
+      set({ error: errorMessage, loading: false, searchProducts: [] });
       toast.error(errorMessage);
     }
   },
-  clearSearch: () => set({ products: [], error: null, loading: false }),
+
+  clearSearch: () => set({ searchProducts: [], error: null, loading: false }),
   fetchAllProducts: async ({
     page = 1,
     limit = 10,
@@ -136,9 +143,6 @@ export const useProductStore = create((set) => ({
   },
 
   fetchFeaturedProducts: async () => {
-    const state = useProductStore.getState();
-
-    if (state.isFeaturedFetched) return;
     set({ loading: true });
     try {
       const response = await axios.get("/products/featured");
@@ -146,11 +150,10 @@ export const useProductStore = create((set) => ({
         products: response.data.data,
         source: response.data.source, 
         loading: false,
-        isFeaturedFetched: true,
       });
     } catch (error) {
       set({ error: "Failed to fetch products", loading: false });
-      console.log("Error fetching featured products:", error);
+      toast.error(error.response?.data?.error || "Failed to fetch products");
     }
   },
 

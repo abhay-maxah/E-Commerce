@@ -10,14 +10,23 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    price: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    image: {
-      type: String,
-      required: [true, "image is required"],
+    pricing: [
+      {
+        weight: {
+          type: String,
+          required: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+      },
+    ],
+    images: {
+      type: [String],
+      required: [true, "At least one image is required"],
+      validate: [(val) => val.length > 0, "Provide at least one image URL"],
     },
     category: {
       type: String,
@@ -32,9 +41,8 @@ const productSchema = new mongoose.Schema(
 );
 
 // Indexes
-productSchema.index({ name: 1 }); // Index on name for fast search
-productSchema.index({ category: 1 }); // Index on category for filtering by category
-
+productSchema.index({ name: 1 });
+productSchema.index({ category: 1 });
 
 const Product = mongoose.model("Product", productSchema);
 export default Product;

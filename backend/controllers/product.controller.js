@@ -3,14 +3,6 @@ import { redis } from "../lib/redis.js";
 import Product from "../models/product.model.js";
 import sharp from "sharp";
 import mongoose from "mongoose";
-// export const getAllProductsForSearch = async (req, res) => {
-//   try {
-//     const products = await Product.find({});
-//     res.status(200).json(products);
-//   } catch (error) {
-//     res.status(500).json(error);
-//   }
-// };
 
 export const getAllProductsForSearch = async (req, res) => {
   try {
@@ -18,28 +10,29 @@ export const getAllProductsForSearch = async (req, res) => {
     let products;
 
     const queryFields = {
-      _id: 1, // Essential for keys
+      _id: 1,
       name: 1,
-      image: 1, // <<<< Make sure you have this field in your schema and select it
-      // Add any other fields needed for the product link or display
+      images: 1, // fetch the full array, pick first later
     };
 
     if (searchQuery && searchQuery.trim() !== "") {
-      products = await Product.find(
+      const rawProducts = await Product.find(
         {
           $or: [
             { name: { $regex: searchQuery.trim(), $options: "i" } },
-            // { description: { $regex: searchQuery.trim(), $options: "i" } }, // If you search in description too
           ],
         },
-        queryFields // Select only necessary fields
-      ).limit(10); // Example limit for suggestions
+        queryFields
+      ).limit(10);
+
+      // Transform result to include only the first image
+      products = rawProducts.map((product) => ({
+        _id: product._id,
+        name: product.name,
+        image: Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : null,
+      }));
     } else {
-      // If no search query, and this endpoint is ONLY for search suggestions,
-      // you might want to return an empty array.
-      // If it can also serve all products, then fetch all, but still select fields.
-      // products = await Product.find({}, queryFields).limit(10); // Example
-      products = []; // For a dedicated search suggestion endpoint, return empty if no query
+      products = [];
     }
 
     res.status(200).json(products);
@@ -55,11 +48,8 @@ export const getAllProducts = async (req, res) => {
     limit = parseInt(limit);
 
     let sortOptions = {};
-    if (sortBy === "price_low_high") {
-      sortOptions.price = 1;
-    } else if (sortBy === "price_high_low") {
-      sortOptions.price = -1;
-    } else if (sortBy === "oldest") {
+    // Removed price-based sorting options
+    if (sortBy === "oldest") {
       sortOptions.createdAt = 1;
     } else {
       sortOptions.createdAt = -1; // Default to newest
@@ -113,7 +103,6 @@ export const getFeaturedProducts = async (req, res) => {
   }
 };
 
-
 // export const createProduct = async (req, res) => {
 //   try {
 //     const { name, description, price, image, category } = req.body;
@@ -145,43 +134,37 @@ export const getFeaturedProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, image, category } = req.body;
+    const { name, description, price, images, category } = req.body;
 
-    let cloudinaryResponse = null;
+    if (!images || !images.length) {
+      return res.status(400).json({ error: "Provide at least one image URL" });
+    }
 
-    if (image) {
+    const uploadedImageUrls = [];
+
+    for (const image of images) {
       const imageBuffer = Buffer.from(image.split(",")[1], "base64");
-      console.log("Original Image Size:", imageBuffer.length / 1024, "KB");
 
-      // Compress the image in memory
       const compressedBuffer = await sharp(imageBuffer)
-        .resize({ width: 800 }) // Resize to a max width of 800px
-        .jpeg({ quality: 80 }) // Compress with 80% quality
+        .resize({ width: 800 })
+        .jpeg({ quality: 80 })
         .toBuffer();
 
-      console.log(
-        "Compressed Image Size:",
-        compressedBuffer.length / 1024,
-        "KB"
-      );
+      const compressedBase64 = `data:image/jpeg;base64,${compressedBuffer.toString("base64")}`;
 
-      // Convert the compressed buffer to base64
-      const compressedBase64 = `data:image/jpeg;base64,${compressedBuffer.toString(
-        "base64"
-      )}`;
-
-      // Upload to Cloudinary directly from buffer
-      cloudinaryResponse = await cloudinary.uploader.upload(compressedBase64, {
+      const cloudinaryResponse = await cloudinary.uploader.upload(compressedBase64, {
         folder: "products",
       });
+
+      uploadedImageUrls.push(cloudinaryResponse.secure_url);
     }
 
     const product = await Product.create({
       name,
       description,
       price,
-      image: cloudinaryResponse?.secure_url || "",
       category,
+      images: uploadedImageUrls, // Save array of URLs
     });
 
     res.status(201).json(product);
@@ -190,6 +173,7 @@ export const createProduct = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 export const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -218,36 +202,19 @@ export const deleteProduct = async (req, res) => {
 };
 export const getRecommendeProducts = async (req, res) => {
   try {
-    const product = await Product.aggregate([
+    const products = await Product.aggregate([
       {
         $sample: { size: 4 },
-      },
-      {
-        $project: {
-          name: 1,
-          price: 1,
-          image: 1,
-          _id: 1,
-          description: 1,
-        },
-      },
+      }
     ]);
-    res.status(200).json(product);
+
+    res.status(200).json(products);
   } catch (error) {
-    console.log("Error in getReccommendeProduct", error.message);
-    res.status(500).json(error);
+    console.error("Error in getRecommendeProducts:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
-// export const getProductsByCategory = async (req, res) => {
-//   try {
-//     const { category } = req.params;
-//     const products = await Product.find({ category });
-//     res.status(200).json(products);
-//   } catch (error) {
-//     console.log("Error in category", error.message);
-//     res.status(500).json(error);
-//   }
-// };
+
 export const getProductsByCategory = async (req, res) => {
   try {
     const { category } = req.params;
@@ -316,58 +283,64 @@ async function updateFeaturedProductsCache() {
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
+    const { name, description, category, images = [], pricing = [] } = req.body;
 
-    const { name, price, description, category, image } = req.body;
-
-    // Find product by ID
     const product = await Product.findById(id);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    let cloudinaryResponse = null;
+    // Handle new image uploads if any
+    const updatedImageUrls = [];
+    for (const img of images) {
+      if (img.startsWith("http")) {
+        // Already uploaded
+        updatedImageUrls.push(img);
+      } else if (img.includes("base64")) {
+        try {
+          const imageBuffer = Buffer.from(img.split(",")[1], "base64");
+          const compressedBuffer = await sharp(imageBuffer)
+            .resize({ width: 800 })
+            .jpeg({ quality: 80 })
+            .toBuffer();
 
-    // Only process image if it's changed and it's not already a URL
-    if (image && image !== product.image && !image.startsWith("http")) {
-      if (!image.includes(",")) {
-        return res.status(400).json({ message: "Invalid image format" });
-      }
-
-      try {
-        const imageBuffer = Buffer.from(image.split(",")[1], "base64");
-
-        const compressedBuffer = await sharp(imageBuffer)
-          .resize({ width: 800 })
-          .jpeg({ quality: 80 })
-          .toBuffer();
-
-        cloudinaryResponse = await cloudinary.uploader.upload(
-          `data:image/jpeg;base64,${compressedBuffer.toString("base64")}`,
-          { folder: "products" }
-        );
-      } catch (err) {
-        console.error("Image processing error:", err.message);
-        return res.status(400).json({ message: "Invalid image format" });
+          const cloudinaryRes = await cloudinary.uploader.upload(
+            `data:image/jpeg;base64,${compressedBuffer.toString("base64")}`,
+            { folder: "products" }
+          );
+          updatedImageUrls.push(cloudinaryRes.secure_url);
+        } catch (err) {
+          console.error("Image upload failed:", err.message);
+          return res.status(400).json({ message: "Image processing failed" });
+        }
       }
     }
 
-    // Prepare updated data
-    const updatedData = {
+    // Validate pricing array
+    const validPricing = pricing
+      .filter((item) => item.weight && item.price >= 0)
+      .map((item) => ({
+        weight: item.weight,
+        price: item.price,
+      }));
+
+    // Prepare update object
+    const updatedFields = {
       ...(name && { name }),
-      ...(price && { price }),
       ...(description && { description }),
       ...(category && { category }),
-      ...(cloudinaryResponse?.secure_url && {
-        image: cloudinaryResponse.secure_url,
-      }),
+      ...(updatedImageUrls.length && { images: updatedImageUrls }),
+      ...(validPricing.length && { pricing: validPricing }),
     };
-    const updatedProduct = await Product.findByIdAndUpdate(id, updatedData, {
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, updatedFields, {
       new: true,
     });
 
-    res
-      .status(200)
-      .json({ message: "Product updated successfully", updatedProduct });
+    res.status(200).json({
+      message: "Product updated successfully",
+      updatedData: updatedProduct,
+    });
   } catch (error) {
     console.error("Error in updateProduct controller:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });

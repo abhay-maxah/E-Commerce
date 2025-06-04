@@ -5,94 +5,126 @@ import { Link } from "react-router-dom";
 import { MoveRight, Loader } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import axios from "../lib/axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import AddressSelectionModal from "./AddressSelectionModal";
-import { useUserStore } from "../stores/useUserStore"; // Make sure to import the user store
+import { useUserStore } from "../stores/useUserStore";
 
 const stripePromise = loadStripe(
   "pk_test_51RCbq8QQS5dYukip8w5f6jioCO89ij7uxQDBTgQbtroyVdsp3tTcSAaIMwXKBjDcCXuwjqxjTMvlJociOALT0FEq00uhbHN90f"
 );
 
 const OrderSummary = () => {
-  const { total, subtotal, coupon, isCouponApplied, cart, clearCart } =
-    useCartStore();
-  const { user } = useUserStore(); // Get user data from the store
+  const { total: rawTotal, subtotal: rawSubtotal, coupon, isCouponApplied, cart } = useCartStore(); // Keep clearCart for now, but its direct use here will be removed.
+
+  const { user } = useUserStore();
   const [isDisabled, setIsDisabled] = useState(false);
   const { addresses, getAllAddresses } = useAddressStore();
+
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    if (!addresses || addresses.length === 0) {
-      getAllAddresses();
-    }
+    getAllAddresses();
   }, [getAllAddresses]);
 
-  const deliveryCharge = 70; // Set delivery charge
-  const isPremiumUser = user?.premium; // Check if the user is premium
+  const deliveryCharge = 70; // Hardcoded delivery charge
+  const isPremiumUser = user?.premium === true; // Strictly check for boolean true
+  const subtotal = Number(rawSubtotal || 0);
+  const total = Number(rawTotal || 0);
+
   const savings = subtotal - total;
+
+  const finalCalculatedTotal = isPremiumUser ? total : total + deliveryCharge;
+
   const formattedSubtotal = subtotal.toFixed(2);
-  const formattedTotal = (isPremiumUser ? total : total + deliveryCharge).toFixed(2); // Add delivery charge to total only if not premium
+  const formattedTotal = finalCalculatedTotal.toFixed(2);
   const formattedSavings = savings.toFixed(2);
 
-  const handlePayment = async () => {
-    setIsDisabled(true);
+  const processOrder = useCallback(async (addressId) => {
+    if (!addressId) {
+      toast.error("An address ID must be selected to proceed with the order.");
+      setIsDisabled(false);
+      return;
+    }
 
+    const stripe = await stripePromise;
+    if (!stripe) {
+      toast.error("Stripe could not be loaded. Please try again.");
+      setIsDisabled(false);
+      return;
+    }
+
+    try {
+      // Define success and cancel URLs for Stripe redirection
+      // IMPORTANT: Add `source=cart` query parameter to success_url
+      const successUrl = `${window.location.origin}/purchase-success?session_id={CHECKOUT_SESSION_ID}&source=cart`; // Added source=cart
+      const cancelUrl = `${window.location.origin}/cart`; // Redirect back to the cart page if canceled
+
+      const payload = {
+        products: cart,
+        couponCode: (isCouponApplied && coupon?.code) ? coupon.code : null,
+        address: addressId,
+        deliveryCharge: Math.round(isPremiumUser ? 0 : deliveryCharge), // Ensure delivery charge is an integer
+        success_url: successUrl, // Pass the success URL to backend
+        cancel_url: cancelUrl,   // Pass the cancel URL to backend
+      };
+
+      const res = await axios.post("/payments/create-checkout-session", payload);
+      const session = res.data;
+
+      if (!session.id) {
+        throw new Error("Stripe session ID is missing from response. Backend issue?");
+      }
+
+      const result = await stripe.redirectToCheckout({ sessionId: session.id });
+
+      if (result.error) {
+        console.error("❌ Stripe Checkout Error:", result.error.message || result.error);
+        toast.error(`Payment failed: ${result.error.message || "Unknown error."}`);
+      }
+      // Removed setTimeout(() => clearCart(), 500);
+      // Cart clearing is now handled by PurchaseSuccessPage based on `source` parameter
+    } catch (error) {
+      console.error("❌ Order processing failed:", error.response?.data || error.message || error);
+      const errorMessage = error.response?.data?.error || error.message || "Please try again.";
+      toast.error(`Payment processing failed: ${errorMessage}`);
+    } finally {
+      setIsDisabled(false); // Re-enable button even on error or success
+      setIsModalOpen(false); // Close modal if open after attempt
+    }
+  }, [cart, isCouponApplied, coupon, isPremiumUser]); // clearCart is removed from dependencies as it's not directly called here anymore
+
+  const handlePayment = async () => {
+    setIsDisabled(true); // Disable button immediately to prevent multiple clicks
+
+    // --- Address Validation ---
     if (!addresses || addresses.length === 0) {
       toast.error("Please add an address in your profile before proceeding.");
       setIsDisabled(false);
       return;
     }
 
+    // If more than one address, open modal for selection
     if (addresses.length > 1) {
       setIsModalOpen(true);
-      return;
+      return; // Stop here; processOrder will be called from modal's onSelect
     }
 
-    processOrder(addresses[0]);
-  };
-
-  const processOrder = async (address) => {
-    if (!address) {
-      toast.error("Please select an address before proceeding.");
+    // If exactly one address, proceed with it directly
+    if (addresses[0] && addresses[0]._id) {
+      processOrder(addresses[0]._id); // Pass only the _id
+    } else {
+      // This case should ideally not happen if addresses array is valid and non-empty
+      toast.error("Selected address is invalid. Please try again.");
       setIsDisabled(false);
       return;
-    }
-
-    const stripe = await stripePromise;
-    try {
-      const res = await axios.post("/payments/create-checkout-session", {
-        products: cart,
-        couponCode: isCouponApplied && coupon ? coupon.code : null,
-        address: JSON.stringify(address),
-        deliveryCharge: isPremiumUser ? 0 : deliveryCharge, // Send 0 if user is premium, otherwise send delivery charge
-      });
-
-      const session = res.data;
-
-      if (!session.id) {
-        throw new Error("Stripe session ID is missing.");
-      }
-
-      const result = await stripe.redirectToCheckout({ sessionId: session.id });
-
-      if (result.error) {
-        console.error("❌ Stripe Checkout Error:", result.error);
-        toast.error("Payment failed. Please try again.");
-        setIsDisabled(false);
-      } else {
-        setTimeout(() => clearCart(), 500);
-      }
-    } catch (error) {
-      toast.error("Payment processing failed. Please try again.");
-      setIsDisabled(false);
     }
   };
 
   const handleModalCancel = () => {
     setIsModalOpen(false);
-    setIsDisabled(false); // ✅ Reset the button if modal is closed without selection
+    setIsDisabled(false); // Re-enable button if modal is cancelled
   };
 
   return (
@@ -112,14 +144,15 @@ const OrderSummary = () => {
               <dd className="text-base font-medium">Rs.{formattedSubtotal}</dd>
             </dl>
 
-            {coupon && isCouponApplied && savings > 0 && (
+            {/* Conditionally render savings and coupon details */}
+            {isCouponApplied && savings > 0 && ( // Only show savings if coupon is applied and there are actual savings
               <dl className="flex items-center justify-between gap-4">
                 <dt className="text-base font-normal">Savings</dt>
                 <dd className="text-base font-medium">Rs.{formattedSavings}</dd>
               </dl>
             )}
 
-            {coupon && isCouponApplied && (
+            {isCouponApplied && coupon?.code && ( // Only show coupon code if applied and code exists
               <dl className="flex items-center justify-between gap-4">
                 <dt className="text-base font-normal">
                   Coupon ({coupon.code})
@@ -133,7 +166,7 @@ const OrderSummary = () => {
             {!isPremiumUser && (
               <dl className="flex items-center justify-between gap-4">
                 <dt className="text-base font-normal">Delivery Charge</dt>
-                <dd className="text-base font-medium">Rs.{deliveryCharge}</dd>
+                <dd className="text-base font-medium">Rs.{deliveryCharge.toFixed(2)}</dd> {/* Format for display */}
               </dl>
             )}
 
@@ -178,9 +211,15 @@ const OrderSummary = () => {
           addresses={addresses}
           onClose={handleModalCancel}
           onSelect={(address) => {
-            setSelectedAddress(address);
-            setIsModalOpen(false);
-            processOrder(address);
+            if (address && address._id) {
+              setSelectedAddress(address); // Update local state for UI if needed
+              setIsModalOpen(false); // Close modal
+              processOrder(address._id); // Proceed with the selected address ID
+            } else {
+              toast.error("Invalid address selected.");
+              setIsModalOpen(false); // Close modal
+              setIsDisabled(false); // Re-enable button
+            }
           }}
         />
       )}

@@ -50,41 +50,71 @@ export const generateInvoicePDF = (order, doc) => {
   let currentY = tableTop + itemHeight;
   let calculatedTotal = 0;
 
+  // Header
   doc.fontSize(12).fillColor("black")
     .text("Sr No", startX + 5, tableTop)
     .text("Product Name", startX + 50, tableTop)
-    .text("Price (Rs)", startX + 210, tableTop)
-    .text("Qty", startX + 290, tableTop)
-    .text("Total (Rs)", startX + 350, tableTop);
+    .text("Weight", startX + 200, tableTop)
+    .text("Price (Rs)", startX + 270, tableTop)
+    .text("Qty", startX + 350, tableTop)
+    .text("Total (Rs)", startX + 400, tableTop);
 
+  // Underline after header
+  doc.moveTo(startX, tableTop + itemHeight - 10)
+    .lineTo(startX + 500, tableTop + itemHeight - 10)
+    .strokeColor("#333")
+    .lineWidth(1)
+    .stroke();
+
+  // Product Rows
   order.products.forEach((product, index) => {
     const name = product.product?.name || "Unknown";
-    const price = product.product?.price || 0;
+    const weight = product.selectedWeight || "-";
+    const price = product.price || 0;
     const quantity = product.quantity;
     const total = price * quantity;
     calculatedTotal += total;
 
-    const rowHeight = doc.heightOfString(name, { width: 150 });
+    const rowHeight = doc.heightOfString(name, { width: 130 });
 
     doc.fontSize(12)
       .text(index + 1, startX + 5, currentY)
-      .text(name, startX + 50, currentY, { width: 150 })
-      .text(price.toFixed(2), startX + 210, currentY)
-      .text(quantity, startX + 290, currentY)
-      .text(total.toFixed(2), startX + 350, currentY);
+      .text(name, startX + 50, currentY, { width: 130 })
+      .text(weight, startX + 200, currentY)
+      .text(price.toFixed(2), startX + 270, currentY)
+      .text(quantity, startX + 350, currentY)
+      .text(total.toFixed(2), startX + 400, currentY);
 
     currentY += Math.max(rowHeight, itemHeight);
   });
 
+  const deliveryCharge = order.deliveryCharge || 0;
+  const orderTotalAmount = order.totalAmount ?? (calculatedTotal + deliveryCharge);
+  const discount = orderTotalAmount < (calculatedTotal + deliveryCharge)
+    ? (calculatedTotal + deliveryCharge) - orderTotalAmount
+    : 0;
 
-  const discount = (order.totalAmount ?? calculatedTotal) - calculatedTotal;
+  doc.moveDown(2).fontSize(16).fillColor("#A31621")
+    .text("Billing Summary", startX, currentY + 10, { underline: true });
 
-  doc.moveDown(2).fontSize(16).fillColor("#A31621").text("Billing Summary", startX, currentY + 10, { underline: true });
+  let summaryY = currentY + 35;
+
   doc.fontSize(14).fillColor("black")
-    .text(`Total Amount: Rs. ${calculatedTotal.toFixed(2)}`, startX, currentY + 35)
-    .text(`Discount: Rs. ${discount.toFixed(2)}`)
-    .fontSize(16).fillColor("#A31621")
-    .text(`Payable Amount: Rs. ${(order.totalAmount ?? calculatedTotal).toFixed(2)}`);
+    .text(`Total Amount: Rs. ${calculatedTotal.toFixed(2)}`, startX, summaryY);
+  summaryY += 20;
+
+  if (deliveryCharge > 0) {
+    doc.text(`Delivery Charge: Rs. ${deliveryCharge.toFixed(2)}`, startX, summaryY);
+    summaryY += 20;
+  }
+
+  if (discount > 0) {
+    doc.text(`Discount: Rs. ${discount.toFixed(2)}`, startX, summaryY);
+    summaryY += 20;
+  }
+
+  doc.fontSize(16).fillColor("#A31621")
+    .text(`Payable Amount: Rs. ${orderTotalAmount.toFixed(2)}`, startX, summaryY);
 
   doc.moveDown().fontSize(14).fillColor("#A31621")
     .text("Thank you for shopping with CookiesMan!", { align: "center" })

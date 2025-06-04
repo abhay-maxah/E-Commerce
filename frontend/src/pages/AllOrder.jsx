@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useOrderStore } from "../stores/useOrderStore";
 import { useUserStore } from "../stores/useUserStore";
 import { toast } from "react-hot-toast";
-import { Download, Mail, Loader2 } from "lucide-react";
+import { Download, Mail } from "lucide-react";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const AllOrder = () => {
@@ -63,7 +63,8 @@ const AllOrder = () => {
                     <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">Sr No</th>
                     <th className="px-4 py-3 text-center text-xs sm:text-sm font-medium text-white uppercase">Products</th>
                     <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">Total Quantity</th>
-                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">Total Price</th>
+                    {/* Updated column header */}
+                    <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">Order Total</th>
                     <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-white uppercase">Status</th>
                     <th className="px-4 py-3 text-center text-xs sm:text-sm font-medium text-white uppercase">Invoice</th>
                   </tr>
@@ -77,16 +78,17 @@ const AllOrder = () => {
                       (sum, p) => sum + p.quantity,
                       0
                     );
-                    const totalPrice = order.products.reduce(
-                      (sum, p) => sum + p.price * p.quantity,
-                      0
-                    );
+                    // const totalPrice = order.products.reduce( // This line is no longer needed for display
+                    //   (sum, p) => sum + p.price * p.quantity,
+                    //   0
+                    // );
                     return (
                       <tr key={order._id} className="hover:bg-red-50 transition">
                         <td className="px-4 py-4 text-gray-700 font-semibold">{index + 1}</td>
                         <td className="px-4 py-4 text-[#A31621] font-semibold break-words max-w-xs">{productNames}</td>
                         <td className="px-4 py-4 text-gray-700">{totalQuantity}</td>
-                        <td className="px-4 py-4 text-gray-700">Rs.{totalPrice.toFixed(2)}</td>
+                        {/* Displaying order.totalAmount directly */}
+                        <td className="px-4 py-4 text-gray-700">Rs.{order.totalAmount.toFixed(2)}</td>
                         <td className="px-4 py-4 text-[#A31621] font-semibold">{order.orderStatus}</td>
                         <td className="px-4 py-4">
                           <div className="flex justify-center items-center flex-col sm:flex-row gap-2">

@@ -24,6 +24,8 @@ import UserProfile from "./pages/UserProfile";
 import ScrollToTop from "./components/ScrollToTop";
 import ForgotPassword from "./pages/ForgotPassword";
 import usePageTitle from "./hooks/usePageTitle";
+import CreateDiscountForm from "./pages/CreateDiscountForm";
+import PaymentErrorPage from "./pages/PaymentErrorPage";
 const GoogleAuthWrapper = () => {
   const location = useLocation();
   const path = location.pathname;
@@ -68,6 +70,7 @@ function App() {
               path="/signup"
               element={!user ? <GoogleAuthWrapper /> : <Navigate to="/" />}
             />
+
             <Route
               path="/admin"
               element={!user ? <GoogleAuthWrapper /> : <Navigate to="/" />}
@@ -106,6 +109,8 @@ function App() {
               path="/purchase-cancel"
               element={user ? <PurchaseCancelPage /> : <Navigate to="/login" />}
             />
+            <Route path="/payment-error" element={<PaymentErrorPage />} />
+
             <Route path="/error" element={<ErrorPage />} />
             <Route
               path="/order-list"
@@ -118,6 +123,10 @@ function App() {
             <Route
               path="/my-profile"
               element={user ? <UserProfile /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/test"
+              element={< CreateDiscountForm />}
             />
             <Route
               path="*"

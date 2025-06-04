@@ -64,7 +64,7 @@ const setCookies = (res, accessToken, refreshToken) => {
 };
 
 export const signup = async (req, res) => {
-  const { name, email, password, role = "user", captchaToken } = req.body; // Default role = "user"
+  const { name, email, password, role = "user", } = req.body; // Default role = "user"
 
   try {
     if (!captchaToken || !(await verifyCaptcha(captchaToken))) {

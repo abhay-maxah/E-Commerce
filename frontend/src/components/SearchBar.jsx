@@ -4,7 +4,7 @@ import { useProductStore } from "../stores/useProductStore.js";
 import { useNavigate } from "react-router-dom";
 
 const SearchBar = () => {
-  const { products, getAllProductsForSearch, clearSearch, loading } = useProductStore();
+  const { searchProducts, getAllProductsForSearch, clearSearch, loading } = useProductStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
@@ -78,7 +78,7 @@ const SearchBar = () => {
 
   const handleKeyDown = (e) => {
     const list = searchQuery.trim()
-      ? products
+      ? searchProducts
       : recentSearches;
 
     if (e.key === "ArrowDown") {
@@ -134,9 +134,13 @@ const SearchBar = () => {
                     onMouseDown={() => handleRecentClick(product)}
                   >
                     <img
-                      src={product.image || "/placeholder-image.png"}
+                      src={
+                        (Array.isArray(product.images) && product.images.length > 0
+                          ? product.images[0]
+                          : product.image) || "/placeholder-image.png"
+                      }
                       alt={product.name}
-                      className="w-8 h-8 object-cover rounded"
+                      className="w-10 h-10 object-cover rounded"
                       onError={(e) => {
                         e.currentTarget.src = "/placeholder-image.png";
                       }}
@@ -153,9 +157,9 @@ const SearchBar = () => {
             <>
               {loading ? (
                 <div className="px-4 py-3 text-gray-500 text-sm text-center">Searching...</div>
-              ) : products.length > 0 ? (
+              ) : searchProducts.length > 0 ? (
                 <ul>
-                    {products.map((product, index) => (
+                    {searchProducts.map((product, index) => (
                       <li
                         key={product._id}
                         className={`px-4 py-2 hover:bg-red-50 cursor-pointer flex items-center space-x-3 ${selectedIndex === index ? "bg-red-100" : ""

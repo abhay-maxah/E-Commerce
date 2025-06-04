@@ -21,16 +21,27 @@ const userSchema = new mongoose.Schema(
     image: {
       type: String
     },
-    cartItems: [{
-      quantity: {
-        type: Number,
-        default: 1
-      },
-      product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product"
+    cartItems: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        selectedWeight: {
+          type: String,
+          required: true,
+        },
+        selectedPrice: {
+          type: Number,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          default: 1,
+        },
       }
-    }],
+    ],
     role: {
       type: String,
       enum: ["user", "admin"],  
