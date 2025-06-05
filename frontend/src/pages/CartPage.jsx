@@ -3,11 +3,13 @@ import { useCartStore } from "../stores/useCartStore";
 import { motion } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
 import CartItem from "../components/CartItem";
-import PeopleAlsoBought from "../components/PeopleAlsoBought";
-import OrderSummary from "../components/OrderSummary";
-import GiftCouponCard from "../components/GiftCouponCard";
+
 import { useUserStore } from "../stores/useUserStore";
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
+const PeopleAlsoBought = lazy(() => import("../components/PeopleAlsoBought"));
+const OrderSummary = lazy(() => import("../components/OrderSummary"));
+const GiftCouponCard = lazy(() => import("../components/GiftCouponCard"));
+
 const CartPage = () => {
   const [showPremiumBanner, setShowPremiumBanner] = useState(true);
   const { cart } = useCartStore();
@@ -55,7 +57,6 @@ const CartPage = () => {
               </div>
             )}
 
-
             {cart.length === 0 ? (
               <EmptyCartUI />
             ) : (
@@ -71,7 +72,13 @@ const CartPage = () => {
                   })}
               </div>
             )}
-            {cart.length > 0 && <PeopleAlsoBought />}
+
+            {/* Lazy Load PeopleAlsoBought */}
+            {cart.length > 0 && (
+              <Suspense fallback={<div>Loading recommendations...</div>}>
+                <PeopleAlsoBought />
+              </Suspense>
+            )}
           </motion.div>
 
           {cart.length > 0 && (
@@ -81,8 +88,14 @@ const CartPage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <OrderSummary />
-              <GiftCouponCard />
+              {/* Lazy Load OrderSummary */}
+              <Suspense fallback={<div>Loading order summary...</div>}>
+                <OrderSummary />
+              </Suspense>
+              {/* Lazy Load GiftCouponCard */}
+              <Suspense fallback={<div>Loading gift coupon...</div>}>
+                <GiftCouponCard />
+              </Suspense>
             </motion.div>
           )}
         </div>

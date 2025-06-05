@@ -59,7 +59,7 @@ const OrderSummary = () => {
       // Define success and cancel URLs for Stripe redirection
       // IMPORTANT: Add `source=cart` query parameter to success_url
       const successUrl = `${window.location.origin}/purchase-success?session_id={CHECKOUT_SESSION_ID}&source=cart`; // Added source=cart
-      const cancelUrl = `${window.location.origin}/cart`; // Redirect back to the cart page if canceled
+      const cancelUrl = `${window.location.origin}/purchase-cancel`; // Redirect back to the cart page if canceled
 
       const payload = {
         products: cart,

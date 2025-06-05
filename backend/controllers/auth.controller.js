@@ -43,7 +43,6 @@ const verifyCaptcha = async (captchaToken) => {
     // For reCAPTCHA v3: check success and minimum score threshold (e.g., 0.5)
     return data.success && data.score >= 0.5;
   } catch (error) {
-    console.error("Captcha verification error:", error.message);
     return false;
   }
 };
@@ -122,7 +121,6 @@ export const login = async (req, res) => {
       res.status(400).json({ message: "Invalid email or password" });
     }
   } catch (error) {
-    console.log("Error in login controller", error.message);
     res.status(500).json({ message: error.message });
   }
 };

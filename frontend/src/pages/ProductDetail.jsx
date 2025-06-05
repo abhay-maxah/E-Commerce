@@ -136,10 +136,8 @@ const ProductDetail = () => {
     }
 
     try {
-      // Define success and cancel URLs for Stripe redirection
-      // IMPORTANT: Add `source=product_detail` query parameter to success_url
       const successUrl = `${window.location.origin}/purchase-success?session_id={CHECKOUT_SESSION_ID}&source=product_detail`;
-      const cancelUrl = `${window.location.origin}/product/${product._id}`; // Redirect back to this product page
+      const cancelUrl = `${window.location.origin}/purchase-cancel`;
 
       const productsForBackend = [
         {
