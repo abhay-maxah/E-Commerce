@@ -103,12 +103,57 @@ export const getFeaturedProducts = async (req, res) => {
   }
 };
 
+// export const createProduct = async (req, res) => {
+//   try {
+//     const { name, description, price, images, category } = req.body;
+
+//     if (!images || !images.length) {
+//       return res.status(400).json({ error: "Provide at least one image URL" });
+//     }
+
+//     const uploadedImageUrls = [];
+
+//     for (const image of images) {
+//       const imageBuffer = Buffer.from(image.split(",")[1], "base64");
+
+//       const compressedBuffer = await sharp(imageBuffer)
+//         .resize({ width: 800 })
+//         .jpeg({ quality: 80 })
+//         .toBuffer();
+
+//       const compressedBase64 = `data:image/jpeg;base64,${compressedBuffer.toString("base64")}`;
+
+//       const cloudinaryResponse = await cloudinary.uploader.upload(compressedBase64, {
+//         folder: "products",
+//       });
+
+//       uploadedImageUrls.push(cloudinaryResponse.secure_url);
+//     }
+
+//     const product = await Product.create({
+//       name,
+//       description,
+//       price,
+//       category,
+//       images: uploadedImageUrls, // Save array of URLs
+//     });
+
+//     res.status(201).json(product);
+//   } catch (error) {
+//     console.log("Error in createProduct controller", error.message);
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// };
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, images, category } = req.body;
+    const { name, description, pricing, images, category } = req.body;
 
     if (!images || !images.length) {
       return res.status(400).json({ error: "Provide at least one image URL" });
+    }
+
+    if (!pricing || !Array.isArray(pricing) || pricing.length === 0) {
+      return res.status(400).json({ error: "Provide at least one pricing entry (weight and price)" });
     }
 
     const uploadedImageUrls = [];
@@ -133,14 +178,14 @@ export const createProduct = async (req, res) => {
     const product = await Product.create({
       name,
       description,
-      price,
+      pricing, // Now using pricing array from request
       category,
-      images: uploadedImageUrls, // Save array of URLs
+      images: uploadedImageUrls,
     });
 
     res.status(201).json(product);
   } catch (error) {
-    console.log("Error in createProduct controller", error.message);
+    console.error("Error in createProduct controller:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

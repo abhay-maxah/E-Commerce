@@ -23,7 +23,7 @@ const CreateProductForm = ({ productToEdit, closeModal = () => { } }) => {
       setProduct({
         name: productToEdit.name || "",
         description: productToEdit.description || "",
-        pricing: productToEdit.pricing || [{ weight: "", price: "" }],
+        pricing: productToEdit.pricing || [{ weight: "standard", price: "" }],
         price: productToEdit.price || "",
         category: productToEdit.category || "",
         images: productToEdit.images || [],
@@ -51,7 +51,7 @@ const CreateProductForm = ({ productToEdit, closeModal = () => { } }) => {
           ? product
           : {
             ...product,
-            pricing: [{ weight: "", price: product.price }],
+            pricing: [{ weight: "standard", price: product.price }],
           };
 
       if (productToEdit) {
