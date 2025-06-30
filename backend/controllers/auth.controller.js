@@ -63,7 +63,7 @@ const setCookies = (res, accessToken, refreshToken) => {
 };
 
 export const signup = async (req, res) => {
-  const { name, email, password, role = "user", } = req.body; // Default role = "user"
+  const { name, email, password, role = "user", captchaToken } = req.body; // Default role = "user"
 
   try {
     if (!captchaToken || !(await verifyCaptcha(captchaToken))) {
@@ -269,7 +269,7 @@ export const sendAuthCode = async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000)
     verificationCodes[email] = code;
     await sendEmail(email, code);
-    res.status(200).json({ message: "Code sent successfully", code });
+    res.status(200).json({ message: "Code sent successfully" });
   } catch (error) {
     console.error("Error sending email:", error);
     res.status(500).json({ message: "Server Error while sending Mail", error });
@@ -285,7 +285,7 @@ export const sendAuthCodeForgot = async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000)
     verificationCodes[email] = code;
     await sendEmail(email, code);
-    res.status(200).json({ message: "Code sent successfully", code });
+    res.status(200).json({ message: "Code sent successfully" });
   } catch (error) {
     console.error("Error sending email:", error);
     res.status(500).json({ message: "Server Error while sending Mail", error });
