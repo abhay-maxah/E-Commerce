@@ -8,7 +8,8 @@ import {
   X,
   ClipboardList,
   CookieIcon,
-  User,
+  User, 
+  Heart,
   ChevronDown,
 } from "lucide-react";
 import { NavLink, Link, useLocation } from "react-router-dom";
@@ -163,6 +164,17 @@ const NavBar = () => {
                     </span>
                   )}
                 </NavLink>
+                <NavLink
+                  to="/wishlist"
+                  className={`flex items-center py-2 px-2 rounded-md text-sm md:text-base font-semibold ${location.pathname === "/wishlist"
+                      ? "bg-[#A31621] text-white"
+                      : "text-[#A31621] hover:bg-[#A31621] hover:text-white"
+                    }`}
+                  onClick={closeAll}
+                >
+                  <Heart size={20} className="mr-2" />
+                  <span>Wishlist</span>
+                </NavLink>
 
                 <NavLink
                   to="/my-profile"
@@ -178,7 +190,6 @@ const NavBar = () => {
                     <span className="ml-1 text-yellow-500" title="Premium User">👑</span>
                   )}
                 </NavLink>
-
 
                 {/* Orders Section */}
                 <NavLink

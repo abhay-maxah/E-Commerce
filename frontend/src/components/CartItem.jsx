@@ -1,14 +1,19 @@
 import { useState, useMemo, useEffect } from "react";
-import { Minus, Plus, Trash } from "lucide-react";
+import { Minus, Plus, Trash, Heart } from "lucide-react";
 import { useCartStore } from "../stores/useCartStore";
+import { useWishlistStore } from "../stores/useWishlistStore";
 import { debounce } from "lodash";
+import toast from "react-hot-toast";
 
 const CartItem = ({ item }) => {
   const { updateQuantity, removeFromCart } = useCartStore();
+  const { addToWishlist, wishlist } = useWishlistStore();
+
   const [quantity, setQuantity] = useState(item.quantity);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [imageError, setImageError] = useState(false);
+
   useEffect(() => {
     setQuantity(item.quantity);
   }, [item.quantity]);
@@ -38,13 +43,55 @@ const CartItem = ({ item }) => {
     debouncedDelete(item._id);
   };
 
+  // We assume that the cart item contains a "product" field with full product details.
+  const productObject = item.product || item; // Fallback in case product info is not nested
+  const productId = productObject?._id;
+
+  // Safely check wishlist: compare product _id (whether product is an object or ID)
+  const isWishlisted = wishlist.some((wish) => {
+    const wishProductId =
+      typeof wish.product === "object" && wish.product !== null
+        ? wish.product._id
+        : wish.product;
+    return wishProductId === productId;
+  });
+
+  const handleAddToWishlist = async () => {
+    const fallbackProductObject =
+      typeof item.product === "object" && item.product !== null
+        ? item.product
+        : { _id: item.product || item._id };
+    const isWishlisted = wishlist.some((wish) => {
+      const wishProductId =
+        typeof wish.product === "object" && wish.product !== null
+          ? wish.product._id
+          : wish.product;
+      return wishProductId === fallbackProductObject._id;
+    });
+
+    // if (isWishlisted) {
+    //   handleRemoveFromCart();
+    //   return;
+    // }
+
+    try {
+      await addToWishlist(
+        fallbackProductObject,
+        item.selectedWeight,
+        item.selectedPrice
+      );
+      // handleRemoveFromCart();
+    } catch (err) {
+      toast.error("Failed to add to wishlist");
+    }
+  };
+
   if (!isVisible) return null;
 
-  const imageUrl =
-    !imageError && item.image ? item.image : "/placeholder.png";
-
+  const imageUrl = !imageError && item.image ? item.image : "/placeholder.png";
   const showWeight =
-    item.selectedWeight && item.selectedWeight.toLowerCase() !== "default";
+    item.selectedWeight &&
+    item.selectedWeight.toLowerCase() !== "default";
 
   return (
     <div className="rounded-lg border border-red-500/30 p-4 md:p-6 shadow-sm bg-transparent transition-all duration-300">
@@ -103,14 +150,25 @@ const CartItem = ({ item }) => {
             </p>
           )}
 
-          <button
-            onClick={handleRemoveFromCart}
-            disabled={isDeleting}
-            className="inline-flex items-center gap-1 text-sm text-red-600 hover:underline disabled:opacity-50"
-          >
-            <Trash className="w-4 h-4" />
-            {isDeleting ? "Removing..." : "Remove"}
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleRemoveFromCart}
+              disabled={isDeleting}
+              className="inline-flex items-center gap-1 text-sm text-red-600 hover:underline disabled:opacity-50"
+            >
+              <Trash className="w-4 h-4" />
+              {isDeleting ? "Removing..." : "Remove"}
+            </button>
+
+            {/* <button
+              onClick={handleAddToWishlist}
+              disabled={isDeleting || isWishlisted}
+              className="inline-flex items-center gap-1 text-sm text-red-600 hover:underline disabled:opacity-50"
+            >
+              <Heart className="w-4 h-4" />
+              {isWishlisted ? "Wishlisted" : "Add to Wishlist"}
+            </button> */}
+          </div>
         </div>
       </div>
     </div>

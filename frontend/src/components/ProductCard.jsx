@@ -1,19 +1,35 @@
 import toast from "react-hot-toast";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Heart } from "lucide-react";
 import { useUserStore } from "../stores/useUserStore";
 import { useCartStore } from "../stores/useCartStore";
+import { useWishlistStore } from "../stores/useWishlistStore";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const ProductCard = ({ product }) => {
   const { user } = useUserStore();
   const { addToCart } = useCartStore();
+  const {
+    wishlist,
+    addToWishlist,
+    removeFromWishlist,
+  } = useWishlistStore();
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
 
+  const mainImage = product.images?.[0] || "/placeholder.jpg";
+  const hoverImage = product.images?.[1] || mainImage;
+  const firstPrice = product.pricing?.[0]?.price ?? "N/A";
+  const firstWeight = product.pricing?.[0]?.weight ?? "";
+
+  // Fix: avoid crash if item.product is null or undefined
+  const isInWishlist = wishlist.some((item) => {
+    const id = item?.product?._id || item?.product;
+    return id === product._id;
+  });
+
   const handleAddToCart = (e) => {
     e.stopPropagation();
-
     if (!user) {
       toast.error("Please login to add products to cart", { id: "login" });
       return;
@@ -21,14 +37,23 @@ const ProductCard = ({ product }) => {
     addToCart(product, firstPrice, firstWeight);
   };
 
+  const handleToggleWishlist = async (e) => {
+    e.stopPropagation();
+    if (!user) {
+      toast.error("Please login to use wishlist", { id: "wishlist-login" });
+      return;
+    }
+
+    if (isInWishlist) {
+      await removeFromWishlist(product._id);
+    } else {
+      await addToWishlist(product, firstWeight, firstPrice);
+    }
+  };
+
   const openProductDetail = () => {
     navigate(`/product/${product._id}`);
   };
-
-  const mainImage = product.images?.[0] || "/placeholder.jpg";
-  const hoverImage = product.images?.[1] || mainImage;
-  const firstPrice = product.pricing?.[0]?.price ?? "N/A";
-  const firstWeight = product.pricing?.[0]?.weight ?? "";
 
   return (
     <div
@@ -44,6 +69,18 @@ const ProductCard = ({ product }) => {
           alt={product.name}
         />
         <div className="absolute inset-0 bg-black bg-opacity-20" />
+
+        {/* Heart Icon */}
+        <button
+          onClick={handleToggleWishlist}
+          className="absolute top-2 right-2 z-10 p-1.5 bg-white rounded-full hover:bg-gray-100 transition"
+        >
+          <Heart
+            size={20}
+            className={`transition-all duration-300 ${isInWishlist ? "text-red-500 scale-110" : "text-gray-600 scale-100"}`}
+            fill={isInWishlist ? "red" : "none"}
+          />
+        </button>
       </div>
 
       <div className="mt-4 px-5 pb-5">

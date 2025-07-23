@@ -42,6 +42,23 @@ const userSchema = new mongoose.Schema(
         },
       }
     ],
+    savedForLaterItems: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        selectedWeight: {
+          type: String,
+          required: true,
+        },
+        selectedPrice: {
+          type: Number,
+          required: true,
+        },
+      }
+    ],
     role: {
       type: String,
       enum: ["user", "admin"],  

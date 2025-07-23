@@ -2,7 +2,7 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import axios from "../lib/axios";
 
-export const useProductStore = create((set) => ({
+export const useProductStore = create((set, get) => ({
   products: [],
   searchProducts: [],
   source: "",
@@ -104,40 +104,41 @@ export const useProductStore = create((set) => ({
   },
 
   deleteProduct: async (productId) => {
-    set({ loading: true });
+    const prevProducts = get().products;
+
+    // Optimistically remove product from UI
+    const filteredProducts = prevProducts.filter(
+      (product) => product._id !== productId
+    );
+    set({ products: filteredProducts });
+
     try {
       await axios.delete(`/products/${productId}`);
-      set((prevProducts) => ({
-        products: prevProducts.products.filter(
-          (product) => product._id !== productId
-        ),
-        loading: false,
-      }));
+      toast.success("Product deleted successfully");
     } catch (error) {
-      set({ loading: false });
-      toast.error(error.response.data.error || "Failed to delete product");
+      // Rollback UI
+      set({ products: prevProducts });
+      toast.error(error.response?.data?.error || "Failed to delete product");
     }
   },
-  toggleFeaturedProduct: async (productId) => {
-    set({ loading: true });
-    try {
-      const response = await axios.patch(`/products/${productId}`);
-      const updatedProduct = response.data;
 
-      set((state) => {
-        const updatedProducts = state.products.map((product) =>
-          product._id === productId
-            ? { ...product, isFeatured: updatedProduct.isFeatured }
-            : product
-        );
-        return {
-          products: updatedProducts,
-          loading: false,
-          isFeaturedFetched: false,
-        };
-      });
+  toggleFeaturedProduct: async (productId) => {
+    const prevProducts = get().products;
+
+    // Optimistically toggle featured
+    const toggledProducts = prevProducts.map((product) =>
+      product._id === productId
+        ? { ...product, isFeatured: !product.isFeatured }
+        : product
+    );
+    set({ products: toggledProducts });
+
+    try {
+      await axios.patch(`/products/${productId}`);
+      toast.success("Featured status updated");
     } catch (error) {
-      set({ loading: false });
+      // Rollback toggle
+      set({ products: prevProducts });
       toast.error(error.response?.data?.error || "Failed to update product");
     }
   },

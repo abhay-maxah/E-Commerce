@@ -9,6 +9,7 @@ import NavBar from "./components/NavBar";
 import { Toaster } from "react-hot-toast";
 import { useUserStore } from "./stores/useUserStore";
 import { useCartStore } from "./stores/useCartStore";
+import { useWishlistStore } from "./stores/useWishlistStore";
 import LoadingSpinner from "./components/LoadingSpinner";
 import AdminPage from "./pages/AdminPage";
 import CategoryPage from "./pages/CategoryPage";
@@ -26,6 +27,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import usePageTitle from "./hooks/usePageTitle";
 import CreateDiscountForm from "./pages/CreateDiscountForm";
 import PaymentErrorPage from "./pages/PaymentErrorPage";
+import WishlistPage from "./pages/WishlistPage";
 const GoogleAuthWrapper = () => {
   const location = useLocation();
   const path = location.pathname;
@@ -42,6 +44,7 @@ const GoogleAuthWrapper = () => {
 function App() {
   const { user, checkAuth, checkingAuth } = useUserStore();
   const { getCartItems } = useCartStore();
+  const { getWishlist } = useWishlistStore();
   const location = useLocation();
 
   useEffect(() => {
@@ -49,8 +52,11 @@ function App() {
   }, [checkAuth]);
 
   useEffect(() => {
-    if (user) getCartItems();
-  }, [user, getCartItems]);
+    if (user) {
+      getCartItems();
+      getWishlist();
+    }
+  }, [user, getCartItems, getWishlist]);
   usePageTitle()
   if (checkingAuth) return <LoadingSpinner />;
 
@@ -96,10 +102,10 @@ function App() {
               path="/cart"
               element={user ? <CartPage /> : <Navigate to="/login" />}
             />
+            <Route path="/wishlist" element={user ? <WishlistPage /> : <Navigate to="/login" />} />
             <Route
               path="/premium"
               element={user ? <PlanCard /> : <Navigate to="/login" />}
-
             />
             <Route
               path="/purchase-success"
