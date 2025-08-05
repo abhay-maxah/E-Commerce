@@ -5,7 +5,8 @@ import { useUserStore } from "../stores/useUserStore";
 import { useAddressStore } from "../stores/useAddressStore";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { loadStripe } from "@stripe/stripe-js";
-import { ShoppingCart, CreditCard, Loader } from "lucide-react";
+import { ShoppingCart, CreditCard, Loader, Heart } from "lucide-react";
+import { useWishlistStore } from "../stores/useWishlistStore";
 import { useCartStore } from "../stores/useCartStore";
 import axios from "../lib/axios";
 import toast from "react-hot-toast";
@@ -21,12 +22,18 @@ const ProductDetail = () => {
   const { user, checkingAuth } = useUserStore();
   const { addresses, getAllAddresses } = useAddressStore();
   const { addToCart, coupon, isCouponApplied } = useCartStore();
+  const {
+    wishlist,
+    addToWishlist,
+    removeFromWishlist,
+  } = useWishlistStore();
   const navigate = useNavigate();
   const [isDisabled, setIsDisabled] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedPricing, setSelectedPricing] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     if (productId) fetchProductById(productId);
@@ -37,9 +44,7 @@ const ProductDetail = () => {
   }, [user, getAllAddresses]);
 
   useEffect(() => {
-    // If only one address, select it by default
     if (addresses.length === 1) setSelectedAddress(addresses[0]);
-    // If user has no addresses, ensure selectedAddress is null
     if (addresses.length === 0) setSelectedAddress(null);
   }, [addresses]);
 
@@ -47,6 +52,17 @@ const ProductDetail = () => {
     if (product?.images?.length) setSelectedImage(product.images[0]);
     if (product?.pricing?.length) setSelectedPricing(product.pricing[0]);
   }, [product]);
+
+  useEffect(() => {
+    if (product) {
+      const exists = wishlist.some(
+        (item) =>
+          (item.product?._id || item.product) === product._id
+      );
+      setIsFavorite(exists);
+    }
+  }, [product, wishlist]);
+
 
   const isChocolate = product?.category?.toLowerCase() === "chocolates";
 
@@ -64,18 +80,17 @@ const ProductDetail = () => {
     }
 
     const updatedProduct = {
-      ...product, // Spread original product to include _id, name, images etc.
+      ...product,
       selectedPrice: selectedPricing.price,
       selectedWeight: selectedPricing.weight,
-      quantity: 1, // Default quantity for single add to cart
+      quantity: 1,
     };
 
     addToCart(updatedProduct, selectedPricing.price, selectedPricing.weight);
   };
 
-
   const handleBuyNow = async () => {
-    setIsDisabled(true); // Disable button immediately
+    setIsDisabled(true);
 
     if (!user) {
       toast.error("Login to proceed.");
@@ -83,7 +98,7 @@ const ProductDetail = () => {
       return;
     }
 
-    if (!selectedPricing) { // Ensure a pricing option is selected for "Buy Now"
+    if (!selectedPricing) {
       toast.error("Please select a weight/price option before buying.");
       setIsDisabled(false);
       return;
@@ -97,20 +112,18 @@ const ProductDetail = () => {
 
     if (addresses.length > 1 && !selectedAddress) {
       setIsModalOpen(true);
-      return; // Open modal, processBuyNowOrder will be called from modal's onSelect
+      return;
     }
 
     const addressToUse = selectedAddress || addresses[0];
 
     try {
       await processBuyNowOrder(addressToUse);
-    } catch (checkoutError) { // Changed variable name to avoid shadowing
+    } catch (checkoutError) {
       console.error("Buy Now checkout initiation error:", checkoutError);
-      toast.error(
-        "There was an issue initiating your order. Please try again or contact support."
-      );
+      toast.error("There was an issue initiating your order. Please try again or contact support.");
     } finally {
-      if (!isModalOpen) { // Only re-enable if modal isn't pending selection
+      if (!isModalOpen) {
         setIsDisabled(false);
       }
     }
@@ -157,9 +170,9 @@ const ProductDetail = () => {
         products: productsForBackend,
         couponCode: isCouponApplied && coupon ? coupon.code : null,
         address: addressToUse._id,
-        deliveryCharge: Math.round(deliveryCharge), // Ensure delivery charge is an integer
-        success_url: successUrl, // Pass the success URL to backend
-        cancel_url: cancelUrl,   // Pass the cancel URL to backend
+        deliveryCharge: Math.round(deliveryCharge),
+        success_url: successUrl,
+        cancel_url: cancelUrl,
       });
 
       const session = res.data;
@@ -172,25 +185,48 @@ const ProductDetail = () => {
         console.error("❌ Stripe Checkout Redirection Error:", result.error.message || result.error);
         toast.error("Payment failed. Please try again.");
       }
-      // No clearCart() call here; it will be handled by PurchaseSuccessPage
     } catch (error) {
       console.error("❌ Buy Now Payment processing failed:", error.response?.data || error.message || error);
       const errorMessage = error.response?.data?.error || error.message || "Please try again.";
       toast.error(`Payment error: ${errorMessage}`);
     } finally {
       setIsDisabled(false);
-      setIsModalOpen(false); // Close modal if open after attempt
+      setIsModalOpen(false);
     }
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
-    setIsDisabled(false); // Re-enable button if modal is closed without selection
+    setIsDisabled(false);
   };
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      toast.error("Please login to manage your wishlist.");
+      return;
+    }
+
+    if (!selectedPricing) {
+      toast.error("Please select a weight/price option.");
+      return;
+    }
+
+    const productId = product._id;
+    const selectedWeight = selectedPricing.weight;
+    const selectedPrice = selectedPricing.price;
+
+    if (isFavorite) {
+      await removeFromWishlist(productId);
+    } else {
+      await addToWishlist(product, selectedWeight, selectedPrice);
+    }
+
+    setIsFavorite(!isFavorite);
+  };
+
 
   return (
     <div className="max-w-6xl mx-auto mt-20 p-4 sm:p-6 bg-transparent shadow-lg rounded-lg flex flex-col md:flex-row gap-8 relative pb-20">
-      {/* Back Button */}
       <button
         className="absolute top-4 left-4 px-3 py-2 bg-[#A31621] text-white rounded-lg font-semibold z-50"
         onClick={() => navigate(-1)}
@@ -198,7 +234,6 @@ const ProductDetail = () => {
         ← Back
       </button>
 
-      {/* Left: Images */}
       <div className="flex gap-4 w-full md:w-2/5 mt-12 md:mt-0">
         <div className="flex flex-col gap-2 overflow-y-auto max-h-96">
           {product?.images?.map((img, idx) => (
@@ -223,11 +258,24 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Right: Details */}
       <div className="w-full md:w-3/5">
-        <h2 className="text-3xl font-extrabold text-[#A31621] mb-3">
-          {product?.name}
-        </h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-3xl font-extrabold text-[#A31621]">
+            {product?.name}
+          </h2>
+          <button
+            onClick={toggleFavorite}
+            className="text-[#A31621] hover:text-red-700 transition"
+            aria-label="Toggle Wishlist"
+          >
+            {isFavorite ? (
+              <Heart className="w-6 h-6 fill-current text-[#A31621]" />
+            ) : (
+              <Heart className="w-6 h-6" />
+            )}
+          </button>
+
+        </div>
 
         {!isChocolate && (
           <div className="mb-4">
@@ -320,7 +368,6 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Address Modal */}
       {isModalOpen && (
         <AddressSelectionModal
           addresses={addresses}

@@ -6,11 +6,22 @@ import mongoose from "mongoose";
 export const createCheckoutSession = async (req, res) => {
   try {
     // 1. IMPORTANT: Destructure success_url and cancel_url from req.body
-    const { products, couponCode, address, deliveryCharge, success_url, cancel_url } = req.body;
+    const {
+      products,
+      couponCode,
+      address,
+      deliveryCharge,
+      success_url,
+      cancel_url,
+    } = req.body;
 
     if (!Array.isArray(products) || products.length === 0) {
-      console.error("Backend: Validation Error: Invalid or empty products array.");
-      return res.status(400).json({ error: "Invalid or empty products array." });
+      console.error(
+        "Backend: Validation Error: Invalid or empty products array."
+      );
+      return res
+        .status(400)
+        .json({ error: "Invalid or empty products array." });
     }
 
     if (!address) {
@@ -19,19 +30,31 @@ export const createCheckoutSession = async (req, res) => {
 
     // 2. Validate that success_url and cancel_url are provided by the frontend
     if (!success_url || !cancel_url) {
-      console.error("Backend: Validation Error: success_url and cancel_url are required in request body.");
-      return res.status(400).json({ error: "success_url and cancel_url are required." });
+      console.error(
+        "Backend: Validation Error: success_url and cancel_url are required in request body."
+      );
+      return res
+        .status(400)
+        .json({ error: "success_url and cancel_url are required." });
     }
     // Optional but recommended: Basic security check to ensure URLs are from your domain
-    if (!success_url.startsWith(process.env.CLIENT_URL) || !cancel_url.startsWith(process.env.CLIENT_URL)) {
-      console.error("Backend: Validation Error: Invalid success_url or cancel_url origin.");
-      return res.status(400).json({ error: "Invalid success_url or cancel_url origin." });
+    if (
+      !success_url.startsWith(process.env.CLIENT_URL) ||
+      !cancel_url.startsWith(process.env.CLIENT_URL)
+    ) {
+      console.error(
+        "Backend: Validation Error: Invalid success_url or cancel_url origin."
+      );
+      return res
+        .status(400)
+        .json({ error: "Invalid success_url or cancel_url origin." });
     }
-
 
     const parsedDeliveryCharge = Number(deliveryCharge);
     if (isNaN(parsedDeliveryCharge)) {
-      return res.status(400).json({ error: "Invalid delivery charge: must be a number." });
+      return res
+        .status(400)
+        .json({ error: "Invalid delivery charge: must be a number." });
     }
 
     let productTotal = 0; // This will accumulate in cents/paise
@@ -44,8 +67,16 @@ export const createCheckoutSession = async (req, res) => {
       const productQuantity = Number(product.quantity || 1);
 
       // Robust validation for each product item
-      if (isNaN(productPrice) || productPrice <= 0 || isNaN(productQuantity) || productQuantity <= 0 || !Number.isInteger(productQuantity)) {
-        throw new Error(`Invalid product price or quantity for product: ${product.name || product._id || `index ${index}`}`);
+      if (
+        isNaN(productPrice) ||
+        productPrice <= 0 ||
+        isNaN(productQuantity) ||
+        productQuantity <= 0 ||
+        !Number.isInteger(productQuantity)
+      ) {
+        throw new Error(
+          `Invalid product price or quantity for product: ${product.name || product._id || `index ${index}`}`
+        );
       }
 
       const unitAmountInPaise = Math.round(productPrice * 100); // Convert to smallest currency unit (paise)
@@ -58,7 +89,6 @@ export const createCheckoutSession = async (req, res) => {
           product_data: {
             name: product.name,
             images: product.image ? [product.image] : [], // Ensure image is an array if present
-            description: product.description || '' // Add description for Stripe, can be empty
           },
           unit_amount: unitAmountInPaise,
         },
@@ -84,7 +114,9 @@ export const createCheckoutSession = async (req, res) => {
 
     if (couponCode) {
       if (!req.user || !req.user._id) {
-        console.log("Backend: Coupon code provided but user not authenticated.");
+        console.log(
+          "Backend: Coupon code provided but user not authenticated."
+        );
       } else {
         coupon = await Coupon.findOne({
           code: couponCode,
@@ -94,8 +126,14 @@ export const createCheckoutSession = async (req, res) => {
 
         if (coupon) {
           const discountPercentage = Number(coupon.discountPercentage);
-          if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
-            console.error(`Backend: Coupon discount percentage is invalid: ${coupon.discountPercentage}`);
+          if (
+            isNaN(discountPercentage) ||
+            discountPercentage < 0 ||
+            discountPercentage > 100
+          ) {
+            console.error(
+              `Backend: Coupon discount percentage is invalid: ${coupon.discountPercentage}`
+            );
             coupon = null;
           } else {
             discountAmount = Math.round(
@@ -104,7 +142,9 @@ export const createCheckoutSession = async (req, res) => {
             productTotal -= discountAmount;
           }
         } else {
-          console.log(`Backend: Coupon with code ${couponCode} not found or inactive for user ${req.user._id}`);
+          console.log(
+            `Backend: Coupon with code ${couponCode} not found or inactive for user ${req.user._id}`
+          );
         }
       }
     }
@@ -112,8 +152,14 @@ export const createCheckoutSession = async (req, res) => {
     // Calculate final amount for Stripe
     const finalAmountForStripe = productTotal + deliveryTotal;
 
-    if (isNaN(finalAmountForStripe) || !Number.isInteger(finalAmountForStripe) || finalAmountForStripe < 0) {
-      console.error(`Backend: Final amount for Stripe is invalid: ${finalAmountForStripe}`);
+    if (
+      isNaN(finalAmountForStripe) ||
+      !Number.isInteger(finalAmountForStripe) ||
+      finalAmountForStripe < 0
+    ) {
+      console.error(
+        `Backend: Final amount for Stripe is invalid: ${finalAmountForStripe}`
+      );
       return res.status(500).json({
         message: "Error processing checkout",
         error: "Calculated payment amount is invalid. Please contact support.",
@@ -127,10 +173,11 @@ export const createCheckoutSession = async (req, res) => {
       mode: "payment",
       // 3. CRITICAL FIX: Use the success_url and cancel_url from req.body
       success_url: success_url, // Use the dynamic URL from frontend
-      cancel_url: cancel_url,   // Use the dynamic URL from frontend
-      discounts: coupon && finalAmountForStripe > 0
-        ? [{ coupon: await createStripeCoupon(coupon.discountPercentage) }]
-        : [],
+      cancel_url: cancel_url, // Use the dynamic URL from frontend
+      discounts:
+        coupon && finalAmountForStripe > 0
+          ? [{ coupon: await createStripeCoupon(coupon.discountPercentage) }]
+          : [],
       metadata: {
         userId: req.user._id.toString(),
         couponCode: couponCode || "",
@@ -139,23 +186,30 @@ export const createCheckoutSession = async (req, res) => {
         discountAmount: discountAmount.toString(),
         products: JSON.stringify(
           products.map((p) => ({
-            productId: p.product,
-            quantity: p.quantity,
-            price: p.selectedPrice,
-            selectedWeight: p.selectedWeight,
+            i: p.product, // productId → i
+            q: p.quantity, // quantity → q
+            p: p.selectedPrice, // price → p
+            w: p.selectedWeight, // selectedWeight → w
           }))
         ),
       },
     });
 
+    if (finalAmountForStripe < 5000) {
+      return res.status(400).json({
+        error: "Minimum order value must be ₹50 to proceed with payment.",
+      });
+    }
     // This part should ideally be in checkoutSuccess after payment is confirmed
     // if it's for generating *new* coupons based on total spend.
     // Keeping it here as per your original code, but consider moving.
     if (finalAmountForStripe / 100 >= 200 && req.user && req.user._id) {
-    // await createNewCoupon(req.user._id); // Uncomment if you have this function
+      await createNewCoupon(req.user._id); // Uncomment if you have this function
     }
 
-    res.status(200).json({ id: session.id, totalAmount: finalAmountForStripe / 100 });
+    res
+      .status(200)
+      .json({ id: session.id, totalAmount: finalAmountForStripe / 100 });
   } catch (error) {
     console.error("❌ Error processing checkout:", error);
     res.status(500).json({
@@ -238,27 +292,40 @@ export const checkoutSuccess = async (req, res) => {
       console.error("❌ JSON Parsing Error:", jsonError.message);
       console.error("📦 Raw Metadata:", session.metadata);
       return res.status(500).json({
-        message: "Error processing order details: Invalid product or address data.",
+        message:
+          "Error processing order details: Invalid product or address data.",
         error: "Metadata JSON parsing failed.",
       });
     }
 
     if (!mongoose.Types.ObjectId.isValid(parsedAddressId)) {
       console.error(`❌ Invalid address ID from metadata: ${parsedAddressId} `);
-      return res.status(400).json({ message: "Invalid address ID from payment session." });
+      return res
+        .status(400)
+        .json({ message: "Invalid address ID from payment session." });
     }
 
     const mappedProducts = productsFromMetadata.map((p, index) => {
-      if (!p.productId || !p.price || !p.quantity || !p.selectedWeight) {
-        throw new Error(`Product at index ${index} from metadata is missing required fields.`);
+      // Support both full and short key formats
+      const productId = p.productId || p.i;
+      const quantity = p.quantity || p.q;
+      const price = p.price || p.p;
+      const selectedWeight = p.selectedWeight || p.w;
+
+      if (!productId || !price || !quantity || !selectedWeight) {
+        throw new Error(
+          `Product at index ${index} from metadata is missing required fields.`
+        );
       }
+
       return {
-        product: p.productId,
-        quantity: p.quantity,
-        price: p.price,
-        selectedWeight: p.selectedWeight,
+        product: productId,
+        quantity,
+        price,
+        selectedWeight,
       };
     });
+
 
     const newOrder = new Order({
       user: session.metadata.userId,
@@ -277,7 +344,7 @@ export const checkoutSuccess = async (req, res) => {
         {
           code: session.metadata.couponCode,
           userId: session.metadata.userId,
-          isActive: true
+          isActive: true,
         },
         { isActive: false },
         { new: true }
@@ -285,7 +352,8 @@ export const checkoutSuccess = async (req, res) => {
     }
     return res.status(200).json({
       success: true,
-      message: "Payment successful, order created, and coupon deactivated if used.",
+      message:
+        "Payment successful, order created, and coupon deactivated if used.",
       orderId: newOrder._id,
       type: "order",
     });
@@ -297,6 +365,7 @@ export const checkoutSuccess = async (req, res) => {
     });
   }
 };
+
 
 export const createYearlyPremiumSession = async (req, res) => {
   try {

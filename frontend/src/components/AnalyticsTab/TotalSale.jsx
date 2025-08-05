@@ -113,7 +113,7 @@ const TotalSale = () => {
           <div className="bg-white rounded-xl p-6 w-[90%] max-w-2xl shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#A31621]">Order Details</h3>
-              <button onClick={() => setSelectedOrder(null)} className="text-[#A31621] font-bold text-xl">×</button>
+              <button onClick={() => setSelectedOrder(null)} className="text-[#A31621] font-bold text-2xl">×</button>
             </div>
 
             <div className="space-y-2 text-gray-700 text-sm">

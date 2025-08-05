@@ -60,15 +60,24 @@ const OrderSummary = () => {
       // IMPORTANT: Add `source=cart` query parameter to success_url
       const successUrl = `${window.location.origin}/purchase-success?session_id={CHECKOUT_SESSION_ID}&source=cart`; // Added source=cart
       const cancelUrl = `${window.location.origin}/purchase-cancel`; // Redirect back to the cart page if canceled
+      const compactProductsForMetadata = cart.map((item) => ({
+        i: item.product,
+        q: item.quantity,
+        p: item.selectedPrice,
+        w: item.selectedWeight,
+      }));
 
       const payload = {
         products: cart,
         couponCode: (isCouponApplied && coupon?.code) ? coupon.code : null,
         address: addressId,
-        deliveryCharge: Math.round(isPremiumUser ? 0 : deliveryCharge), // Ensure delivery charge is an integer
-        success_url: successUrl, // Pass the success URL to backend
-        cancel_url: cancelUrl,   // Pass the cancel URL to backend
+        deliveryCharge: Math.round(isPremiumUser ? 0 : deliveryCharge),
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        // ✨ NEW: optional compressed metadata (or just send `products` normally and backend compresses)
+        compactProducts: compactProductsForMetadata,
       };
+
 
       const res = await axios.post("/payments/create-checkout-session", payload);
       const session = res.data;

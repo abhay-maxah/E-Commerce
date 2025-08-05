@@ -24,7 +24,7 @@ import {
 
 const formatDateLabel = (dateStr) => {
   const date = new Date(dateStr);
-  const options = { month: "short", day: "numeric" }; // e.g. May 20
+  const options = { month: "short", day: "numeric" };
   return date.toLocaleDateString("en-US", options);
 };
 
@@ -48,7 +48,7 @@ const AnalyticsTab = () => {
           .slice(-7)
           .map((item) => ({
             ...item,
-            date: formatDateLabel(item.date), // Convert to "May 20"
+            date: formatDateLabel(item.date),
           }));
 
         setAnalyticsData(response.data.analyticsData);
@@ -62,6 +62,13 @@ const AnalyticsTab = () => {
 
     fetchAnalyticsData();
   }, []);
+
+  const handleProductDelete = () => {
+    setAnalyticsData((prev) => ({
+      ...prev,
+      products: prev.products - 1,
+    }));
+  };
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -140,7 +147,7 @@ const AnalyticsTab = () => {
           </ResponsiveContainer>
         </motion.div>
       ) : selectedTab === "products" ? (
-        <ProductsList />
+          <ProductsList onProductDelete={handleProductDelete} />
       ) : selectedTab === "sales" ? (
         <TotalSale />
       ) : (
@@ -154,7 +161,7 @@ export default AnalyticsTab;
 
 const AnalyticsCard = ({ title, value, icon: Icon, color, onClick }) => (
   <motion.div
-    className={`bg-transparent rounded-lg p-6 shadow-lg overflow-hidden relative {color} cursor-pointer`}
+    className={`bg-transparent rounded-lg p-6 shadow-lg overflow-hidden relative cursor-pointer`}
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
@@ -162,11 +169,11 @@ const AnalyticsCard = ({ title, value, icon: Icon, color, onClick }) => (
   >
     <div className="flex justify-between items-center">
       <div className="z-10">
-        <p className=" text-sm mb-1 font-semibold">{title}</p>
-        <h3 className=" text-3xl font-bold">{value}</h3>
+        <p className="text-sm mb-1 font-semibold">{title}</p>
+        <h3 className="text-3xl font-bold">{value}</h3>
       </div>
     </div>
-    <div className="absolute inset-0 bg-gradient-to-br from-red-700 to-red-400 opacity-30" />
+    <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-30`} />
     <div className="absolute -bottom-4 -right-4 text-red-800 opacity-50">
       <Icon className="h-32 w-32" />
     </div>

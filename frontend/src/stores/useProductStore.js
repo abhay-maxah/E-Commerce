@@ -172,23 +172,42 @@ export const useProductStore = create((set, get) => ({
   },
 
   updateProduct: async (productId, updatedProduct) => {
-    set({ loading: true });
+    // 1. Optimistically update product in local state
+    const prevProducts = get().products;
+    const updatedLocalProduct = {
+      ...prevProducts.find(p => p._id === productId),
+      ...updatedProduct,
+    };
+
+    // Update local state immediately
+    set({
+      products: prevProducts.map(product =>
+        product._id === productId ? updatedLocalProduct : product
+      )
+    });
+
+    // 2. Send request in background
     try {
       const response = await axios.put(
         `/products/${productId}`,
         updatedProduct
       );
-      set((state) => ({
-        products: state.products.map((product) =>
-          product._id === productId
-            ? { ...product, ...response.data.updatedData }
-            : product
-        ),
-        loading: false,
-      }));
+
+      // Optional: Replace with backend-confirmed response (if it differs)
+      if (response.data?.updatedData) {
+        set((state) => ({
+          products: state.products.map(product =>
+            product._id === productId
+              ? { ...product, ...response.data.updatedData }
+              : product
+          )
+        }));
+      }
+
       toast.success("Product updated successfully");
     } catch (error) {
-      set({ loading: false });
+      // 3. Rollback on failure
+      set({ products: prevProducts });
       toast.error(error.response?.data?.message || "Failed to update product");
     }
   },

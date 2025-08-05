@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Crown, Trash, X } from "lucide-react";
 import { useUserStore } from "../../stores/useUserStore";
+import ConfirmDeletePopup from "../ConfirmDeletePopup";
 
 const UserList = () => {
     const { users = [], getAllUsers, deleteUser } = useUserStore();
     const [loading, setLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [userToDelete, setUserToDelete] = useState(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -77,7 +79,7 @@ const UserList = () => {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleDelete(u._id);
+                                                        setUserToDelete(u);
                                                     }}
                                                     className="text-red-500 hover:text-[#A31621] transition duration-200"
                                                 >
@@ -95,17 +97,14 @@ const UserList = () => {
                 </motion.div>
             </div>
 
-            {/* Custom Modal (no external library) */}
+            {/* User Detail Modal */}
             {selectedUser && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative">
-                        <button
-                            className="absolute top-3 right-3 text-gray-500 hover:text-red-600 transition"
-                            onClick={closeUserModal}
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-                        <h3 className="text-lg font-bold text-[#A31621] mb-4">User Details</h3>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold text-[#A31621]">User Details</h3>
+                            <button onClick={closeUserModal} className="text-[#A31621] font-bold text-2xl">×</button>
+                        </div>
                         <div className="space-y-3 text-gray-700">
                             <p className="flex items-center gap-2">
                                 <strong>Name:</strong> {selectedUser.name}
@@ -146,19 +145,24 @@ const UserList = () => {
                             ) : (
                                 <p className="text-gray-600 mt-1">No items in cart.</p>
                             )}
-
-                        </div>
-                        <div className="mt-5 text-right">
-                            <button
-                                onClick={closeUserModal}
-                                className="px-4 py-2 bg-[#A31621] text-white rounded hover:bg-red-700 transition"
-                            >
-                                Close
-                            </button>
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* Reusable Confirmation Popup */}
+            <ConfirmDeletePopup
+                open={!!userToDelete}
+                onClose={() => setUserToDelete(null)}
+                onConfirm={async () => {
+                    if (userToDelete) {
+                        await handleDelete(userToDelete._id);
+                        setUserToDelete(null);
+                    }
+                }}
+                title="Delete User"
+                message={`Are you sure you want to delete user "${userToDelete?.name}"? This action cannot be undone.`}
+            />
         </div>
     );
 };
