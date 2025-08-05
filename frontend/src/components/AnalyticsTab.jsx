@@ -1,32 +1,19 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import axios from "../lib/axios";
+
 import {
   Users,
   Package,
   ShoppingCart,
   IndianRupee,
 } from "lucide-react";
+
 import LoadingSpinner from "./LoadingSpinner";
 import UserList from "./AnalyticsTab/UserList";
 import ProductsList from "./ProductsList";
 import TotalSale from "./AnalyticsTab/TotalSale";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
-
-const formatDateLabel = (dateStr) => {
-  const date = new Date(dateStr);
-  const options = { month: "short", day: "numeric" };
-  return date.toLocaleDateString("en-US", options);
-};
+import Chart from "./AnalyticsTab/Chart";
 
 const AnalyticsTab = () => {
   const [analyticsData, setAnalyticsData] = useState({
@@ -36,23 +23,14 @@ const AnalyticsTab = () => {
     totalRevenue: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [dailySalesData, setDailySalesData] = useState([]);
   const [selectedTab, setSelectedTab] = useState("graph");
+  const [subTab, setSubTab] = useState("overview");
 
   useEffect(() => {
     const fetchAnalyticsData = async () => {
       try {
         const response = await axios.get("/analytics");
-
-        const last7Days = response.data.dailySalesData
-          .slice(-7)
-          .map((item) => ({
-            ...item,
-            date: formatDateLabel(item.date),
-          }));
-
         setAnalyticsData(response.data.analyticsData);
-        setDailySalesData(last7Days);
       } catch (error) {
         console.error("Error fetching analytics data:", error);
       } finally {
@@ -74,78 +52,68 @@ const AnalyticsTab = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <AnalyticsCard
           title="Total Users"
           value={analyticsData.users.toLocaleString()}
           icon={Users}
-          color="from-emerald-500 to-teal-700"
+          color="from-red-500 to-red-200"
           onClick={() => setSelectedTab("users")}
         />
         <AnalyticsCard
           title="Total Products"
           value={analyticsData.products.toLocaleString()}
           icon={Package}
-          color="from-emerald-500 to-green-700"
+          color="from-red-500 to-red-200"
           onClick={() => setSelectedTab("products")}
         />
         <AnalyticsCard
           title="Total Sales"
           value={analyticsData.totalSales.toLocaleString()}
           icon={ShoppingCart}
-          color="from-emerald-500 to-cyan-700"
+          color="from-red-500 to-red-200"
           onClick={() => setSelectedTab("sales")}
         />
         <AnalyticsCard
           title="Total Revenue"
           value={`${analyticsData.totalRevenue.toLocaleString()}`}
           icon={IndianRupee}
-          color="from-emerald-500 to-lime-700"
+          color="from-red-500 to-red-200"
           onClick={() => setSelectedTab("graph")}
         />
       </div>
 
+      {/* Tab View */}
       {selectedTab === "graph" ? (
-        <motion.div
-          className="bg-gradient-to-br from-red-200 to-red-100 opacity-90 rounded-lg p-6 shadow-xl"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.25 }}
-        >
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={dailySalesData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#92969c" />
-              <XAxis dataKey="date" stroke="#92969c" />
-              <YAxis yAxisId="left" stroke="#92969c" />
-              <YAxis yAxisId="right" orientation="right" stroke="#92969c" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#FFEBEE",
-                  color: "#A31621",
-                }}
-              />
-              <Legend />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="sales"
-                stroke="#FF1744"
-                strokeWidth={3}
-                activeDot={{ r: 10, stroke: "#FFF", strokeWidth: 2 }}
-                name="Sales"
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="revenue"
-                stroke="#255ab0"
-                strokeWidth={3}
-                activeDot={{ r: 10, stroke: "#FFF", strokeWidth: 2 }}
-                name="Revenue"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </motion.div>
+        <>
+          <div className="flex justify-center mb-6">
+            <div className="flex flex-wrap gap-4">
+              {["overview", "category", "status", "top", "monthly"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setSubTab(tab)}
+                  className={`px-4 py-2 rounded-lg font-medium shadow-md transition-all duration-200
+              ${subTab === tab
+                      ? "bg-[#A31621] text-white"
+                      : "text-[#A31621] hover:bg-[#A31621] hover:text-white"}`}
+                >
+                  {tab === "overview"
+                    ? "Overview (Line Chart)"
+                    : tab === "category"
+                      ? "By Category"
+                      : tab === "status"
+                        ? "By Status"
+                        : tab === "top"
+                          ? "Top Products"
+                          : "Monthly Sales"}
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* Reusable Chart Component */}
+          <Chart type={subTab} />
+        </>
       ) : selectedTab === "products" ? (
           <ProductsList onProductDelete={handleProductDelete} />
       ) : selectedTab === "sales" ? (
@@ -159,16 +127,17 @@ const AnalyticsTab = () => {
 
 export default AnalyticsTab;
 
+// Stat Card Component
 const AnalyticsCard = ({ title, value, icon: Icon, color, onClick }) => (
   <motion.div
-    className={`bg-transparent rounded-lg p-6 shadow-lg overflow-hidden relative cursor-pointer`}
+    className="bg-transparent rounded-lg p-6 shadow-lg overflow-hidden relative cursor-pointer"
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
     onClick={onClick}
   >
-    <div className="flex justify-between items-center">
-      <div className="z-10">
+    <div className="flex justify-between items-center z-10 relative">
+      <div>
         <p className="text-sm mb-1 font-semibold">{title}</p>
         <h3 className="text-3xl font-bold">{value}</h3>
       </div>
